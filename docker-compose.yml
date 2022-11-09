@@ -1,0 +1,25 @@
+version: '3.5'
+
+services:
+
+  cx-traefik-forward-auth:
+    build:
+      context: .
+      dockerfile: ./.docker/${ENVIRONMENT}.Dockerfile
+      args:
+        - node_env_type=${ENVIRONMENT}
+    # platform: linux/amd64
+    image: creoox/cx-traefik-forward-auth:${APP_VERSION}
+    container_name: ${APP_NAME}-${APP_VERSION}
+    env_file:
+      - ./app/.env
+    volumes:
+     - cx-traefik-forward-auth-vol:/app/node_modules
+    #  - ./app:/app  # Uncomment for hot-reload
+    ports:
+      - 4181:${APP_PORT}
+    command: >
+      sh -c "yarn start:dev"
+
+volumes:
+  cx-traefik-forward-auth-vol:

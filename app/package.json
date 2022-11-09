@@ -1,0 +1,32 @@
+{
+  "name": "cx-traefik-forward-auth",
+  "version": "1.0.0",
+  "description": "Forward authentication service that provides OIDC authentication and/or opaque token validation for the traefik reverse proxy. ",
+  "main": "app.js",
+  "repository": "git@github.com:Creoox/cx-traefik-forward-auth.git",
+  "author": "andratcreo <andrzej.ratajski@effiware.com>",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc",
+    "test:unit": "jest",
+    "test:coverage": "jest --coverage",
+    "start": "node dist/app.js",
+    "start:dev": "ts-node-dev --respawn ./src/app.ts",
+    "start:demo": "ts-node --transpile-only ./src/app.ts"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.4"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.14",
+    "@types/jest": "^29.2.2",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "^18.11.9",
+    "jest": "^29.3.1",
+    "ts-jest": "^29.0.3",
+    "ts-node-dev": "^2.0.0"
+  }
+}

@@ -1,0 +1,37 @@
+### macOS ###
+# General
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Ignore .git and .cache folders
+.git
+.cache
+
+# Ignore CI/CD config files
+.editorconfig
+.gitattributes
+.github
+.gitignore
+.gitlab-ci.yml
+.readthedocs.yml
+.travis.yml
+
+# Editor directories and files
+.idea
+.vscode
+*.code-workspace
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.vsix
+.history/
+.history
+.ionide
+
+# Ignore all markdown files (md) beside all README*.md
+*.md
+!README*.md
+README-secret.md
