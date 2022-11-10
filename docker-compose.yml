@@ -15,7 +15,7 @@ services:
       - ./app/.env
     volumes:
      - cx-traefik-forward-auth-vol:/app/node_modules
-    #  - ./app:/app  # Uncomment for hot-reload
+     - ./app:/app  # Uncomment for hot-reload
     ports:
       - 4181:${APP_PORT}
     command: >
