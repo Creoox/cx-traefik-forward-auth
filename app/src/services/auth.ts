@@ -10,22 +10,22 @@ import { OidcTokenCoreBody, InactiveOidcToken } from "../models/authModel";
  */
 export const introspectToken = async (
   accessToken: string
-): Promise<Required<OidcTokenCoreBody> | InactiveOidcToken> => {
+): Promise<OidcTokenCoreBody | InactiveOidcToken> => {
   if (accessToken === "") {
     throw new Error("Field `accessToken` cannot be empty!");
   }
   const queryString = ``;
   try {
     const { data, status } = await axios.post<
-      Required<OidcTokenCoreBody> | InactiveOidcToken
+      OidcTokenCoreBody | InactiveOidcToken
     >(`/connectors?${queryString}`, {
-      baseURL: process.env.DB_HOST,
+      baseURL: process.env.OIDC_ISSUER_URL,
       headers: {
         Accept: "application/json",
       },
     });
     if (status != 200) {
-        throw new Error(`introspectToken returned status: ${status}`)
+      throw new Error(`introspectToken returned status: ${status}`);
     }
     return data;
   } catch (err) {
