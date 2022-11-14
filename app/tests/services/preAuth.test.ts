@@ -109,4 +109,20 @@ describe("Pre-authenticator", () => {
     );
     expect(endpoints).toEqual(newOidcEndpoints);
   });
+
+  it("lastly - throws error if no providers oidc endpoints were found.", async () => {
+    (axios.get as jest.Mock).mockImplementationOnce(() =>
+      Promise.resolve({
+        data: undefined,
+        status: 404,
+      })
+    );
+
+    // TODO: workaround with overwriting authCache - in future use stub instead
+    if (authCache.has("providerEndpoints")) {
+      authCache.del("providerEndpoints");
+    }
+    await expect(getProviderEndpoints()).rejects.toThrow(Error);
+    expect(axios.get).toHaveBeenCalledTimes(1);
+  });
 });
