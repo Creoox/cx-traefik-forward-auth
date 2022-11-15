@@ -3,7 +3,7 @@
  *
  * @param obj base object
  * @param key to get rid of
- * @returns
+ * @returns object copy without the key
  */
 export const withoutKey = (obj: any, key: string): any => {
   const { [key]: unused, ...rest } = obj;

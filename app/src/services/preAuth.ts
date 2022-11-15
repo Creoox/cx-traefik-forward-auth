@@ -1,57 +1,137 @@
 import axios from "axios";
 import NodeCache from "node-cache";
 
-import { OidcConfigEndpoints } from "../models/authModel";
-
-export const authCache = new NodeCache({ stdTTL: 60 * 60 });
+import { validateJkwsUriKey } from "../models/authModel";
+import type {
+  OidcConfigEndpoints,
+  RsaJkwsUriKey,
+  EcJkwsUriKey,
+} from "../models/authModel";
 
 /**
- * Calls provider's `openid-configuration` endpoint in order to read their
- * other oidc endpoints.
+ * Simple caching mechanism. Exported mostly for testing purposes.
+ *
+ * @see  "../../tests/services/preAuth.test.ts"
+ */
+export const authCache = new NodeCache({ stdTTL: 60 * 60 });
+export const CACHE_PROVIDER_ENDPOINTS = "providerEndpoints";
+export const CACHE_PROVIDER_JWKS = "providerJwks";
+
+/**
+ * Calls provider's discovery endpoint (https://YOUR_DOMAIN/.well-known/openid-configuration)
+ *  endpoint in order to read their other oidc endpoints.
  *
  * @returns fresh providers oidc endpoints
  */
-const receiveProviderEndpoints =
-  async (): Promise<OidcConfigEndpoints> => {
-    try {
-      const { data, status } = await axios.get<OidcConfigEndpoints>(
-        "/.well-known/openid-configuration",
-        {
-          baseURL: process.env.OIDC_ISSUER_URL,
-          headers: {
-            Accept: "application/json",
-          },
-        }
-      );
-      if (status != 200) {
-        throw new Error(
-          `openid-configuration endpoint returned status: ${status}`
-        );
+const receiveProviderEndpoints = async (): Promise<OidcConfigEndpoints> => {
+  try {
+    const { data, status } = await axios.get<OidcConfigEndpoints>(
+      "/.well-known/openid-configuration",
+      {
+        baseURL: process.env.OIDC_ISSUER_URL,
+        headers: {
+          Accept: "application/json",
+        },
       }
-      return data;
-    } catch (err) {
-      console.error(err);
-      throw err;
+    );
+    if (status != 200) {
+      throw new Error(
+        `openid-configuration endpoint returned status: ${status}`
+      );
     }
-  };
+    return data;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
+};
 
 /**
- * Gets providers oidc endpoints either from cache or api.
+ * Calls provider's jwks_uri endpoint in order to read JWK keys.
+ *
+ * @returns fresh providers oidc endpoints
+ */
+const receiveJkwsUri = async (
+  jkwsUriEndpoint: string
+): Promise<Array<RsaJkwsUriKey | EcJkwsUriKey>> => {
+  try {
+    const { data, status } = await axios.get<
+      Record<"keys", Array<RsaJkwsUriKey | EcJkwsUriKey>>
+    >(jkwsUriEndpoint, {
+      headers: {
+        Accept: "application/json",
+      },
+    });
+    if (status != 200) {
+      throw new Error(
+        `openid-configuration endpoint returned status: ${status}`
+      );
+    }
+    return data.keys;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
+};
+
+/**
+ * Gets providers oidc endpoints either from cache or api (discovery endpoint).
  *
  * @returns providers oidc endpoints
  */
 export const getProviderEndpoints = async (): Promise<OidcConfigEndpoints> => {
-  let endpoints: OidcConfigEndpoints | undefined =
-    authCache.get("providerEndpoints");
+  let endpoints: OidcConfigEndpoints | undefined = authCache.get(
+    CACHE_PROVIDER_ENDPOINTS
+  );
 
-  console.log(endpoints);
   if (!endpoints) {
     try {
       endpoints = await receiveProviderEndpoints();
-      authCache.set("providerEndpoints", endpoints);
+      authCache.set(CACHE_PROVIDER_ENDPOINTS, endpoints);
     } catch (err) {
       throw err;
     }
   }
   return endpoints;
+};
+
+/**
+ * Gets providers JWK keys either from cache or api (jwks_uri endpoint).
+ *
+ * @returns JWK keys
+ */
+export const getJwkKeys = async (): Promise<
+  Array<RsaJkwsUriKey | EcJkwsUriKey>
+> => {
+  let jwks: Array<RsaJkwsUriKey | EcJkwsUriKey> | undefined =
+    authCache.get(CACHE_PROVIDER_JWKS);
+
+  if (!jwks) {
+    try {
+      const endpoints = await getProviderEndpoints();
+      const jwksUriEndpoint = endpoints.jwks_uri;
+      jwks = await receiveJkwsUri(jwksUriEndpoint);
+      authCache.set(CACHE_PROVIDER_JWKS, jwks);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  let areAllKeysValid = true;
+  let isAnyKeyValid = false;
+  for (const key in jwks) {
+    areAllKeysValid = areAllKeysValid && validateJkwsUriKey(jwks[key]);
+    isAnyKeyValid = isAnyKeyValid || validateJkwsUriKey(jwks[key]);
+  }
+
+  if (!isAnyKeyValid) {
+    console.error(
+      "Error: There is not a valid key in the Provider's jkws_uri endpoint!"
+    );
+  } else if (!areAllKeysValid) {
+    console.warn(
+      "Warning: not all obtained JWK Keys are valid! Make sure it is a valid OIDC provider."
+    );
+  }
+  return jwks;
 };

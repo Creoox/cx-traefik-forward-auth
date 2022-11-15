@@ -2,7 +2,7 @@ import * as dotenv from "dotenv";
 import express, { Request, Response, Application } from "express";
 
 import { validateDotenvFile } from "./models/dotenvModel";
-import { getProviderEndpoints } from "./services/preAuth";
+import { getJwkKeys } from "./services/preAuth";
 
 dotenv.config();
 const DEV_ENV = "development";
@@ -34,7 +34,7 @@ app.get("/info", (req: Request, res: Response): void => {
 });
 
 app.get("/test", async (req: Request, res: Response): Promise<void> => {
-  const content = await getProviderEndpoints();
+  const content = await getJwkKeys();
   res.status(200).json(content);
 });
 
