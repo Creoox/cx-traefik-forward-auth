@@ -1,5 +1,6 @@
 import axios from "axios";
 import NodeCache from "node-cache";
+import { BaseClient, Issuer, generators } from "openid-client";
 
 import { validateJkwsUriKey } from "../models/authModel";
 import type {
@@ -53,7 +54,7 @@ const receiveProviderEndpoints = async (): Promise<OidcConfigEndpoints> => {
  */
 const receiveJkwsUri = async (
   jkwsUriEndpoint: string
-): Promise<Array<RsaJkwsUriKey | EcJkwsUriKey>> => {
+): Promise<Record<"keys", Array<RsaJkwsUriKey | EcJkwsUriKey>>> => {
   try {
     const { data, status } = await axios.get<
       Record<"keys", Array<RsaJkwsUriKey | EcJkwsUriKey>>
@@ -67,7 +68,7 @@ const receiveJkwsUri = async (
         `openid-configuration endpoint returned status: ${status}`
       );
     }
-    return data.keys;
+    return data;
   } catch (err) {
     console.error(err);
     throw err;
@@ -101,9 +102,9 @@ export const getProviderEndpoints = async (): Promise<OidcConfigEndpoints> => {
  * @returns JWK keys
  */
 export const getJwkKeys = async (): Promise<
-  Array<RsaJkwsUriKey | EcJkwsUriKey>
+  Record<"keys", Array<RsaJkwsUriKey | EcJkwsUriKey>>
 > => {
-  let jwks: Array<RsaJkwsUriKey | EcJkwsUriKey> | undefined =
+  let jwks: Record<"keys", Array<RsaJkwsUriKey | EcJkwsUriKey>> | undefined =
     authCache.get(CACHE_PROVIDER_JWKS);
 
   if (!jwks) {
@@ -119,9 +120,9 @@ export const getJwkKeys = async (): Promise<
 
   let areAllKeysValid = true;
   let isAnyKeyValid = false;
-  for (const key in jwks) {
-    areAllKeysValid = areAllKeysValid && validateJkwsUriKey(jwks[key]);
-    isAnyKeyValid = isAnyKeyValid || validateJkwsUriKey(jwks[key]);
+  for (const key in jwks.keys) {
+    areAllKeysValid = areAllKeysValid && validateJkwsUriKey(jwks.keys[key]);
+    isAnyKeyValid = isAnyKeyValid || validateJkwsUriKey(jwks.keys[key]);
   }
 
   if (!isAnyKeyValid) {
@@ -134,4 +135,22 @@ export const getJwkKeys = async (): Promise<
     );
   }
   return jwks;
+};
+
+/**
+ * Initialize OIDC Client for authentication (log-in).
+ * 
+ * @returns OIDC Client for given provider
+ */
+export const initOidcClient = async (): Promise<BaseClient> => {
+  const issuer = await Issuer.discover(process.env.OIDC_ISSUER_URL as string);
+  return new issuer.Client({
+    client_id: process.env.OIDC_CLIENT_ID!,
+    client_secret: process.env.OIDC_CLIENT_SECRET
+      ? process.env.OIDC_CLIENT_SECRET
+      : undefined,
+    redirect_uris: [`${process.env.HOST_URI}/_oauth`],
+    response_types: ["code"],
+    token_endpoint_auth_method: "none",
+  });
 };

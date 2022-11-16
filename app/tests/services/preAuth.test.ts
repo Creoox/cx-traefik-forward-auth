@@ -34,24 +34,26 @@ const testOidcEndpoints: OidcConfigEndpoints = {
     "https://dev.accounts.dummy.com/realms/dummy/protocol/openid-connect/userinfo",
 };
 
-const testJwks: Array<RsaJkwsUriKey | EcJkwsUriKey> = [
-  {
-    kid: "0TNVl32y36mLkCoS-cX30727D5UQ1cXx8EkGs-G1TIO",
-    kty: "RSA",
-    alg: "RS256",
-    use: "sig",
-    n: "lVCaCQR0iyM0IgBXMXTidBDoyQ7GvBlgnHO7Mb8NIyyiKKPzRfwMtBYqIcUcX_p96hewJ0nE5auE-tZ0HZ34_KSpNjxNN1du3IN2Zhh-Hf0LuxAgXSyfo6xWYQ7KJtMVLecFnYggPA-zf7crWcIE-O_PbrNMMA9ci2eR5GyZlNxQEwR_k63gOsp9Ejfavl0kDNAFLDfeazUW5Rdm0nf5qkuiJOdy26ZvT3gN_Da7htjB2g7KBDCq72Apxt7c4VwK-icYtEy2nn_zuN1fUDCpXrt8QZ8oG9bL2BiSB2Oi5X1c5rvgOICxoin7HyW63f6OKeNCjoo2BdhylRsum1bqMw",
-    e: "AOAB",
-  },
-  {
-    kid: "8BFiCfAxqRECIZR6mCJDkH-HluamiB0KU8Wa4AMj8uN",
-    kty: "RSA",
-    alg: "RSA-OAEP",
-    use: "enc",
-    n: "rvKFkPwbyIhOYPODsToMYIHYImq8Hr9yDHOIAV58BtFSsSmDX-5nxWLbd2fhXDTvTwJT5r0tTR-eVanRWDQJDlnuRICmKQcWAoyfYfkilcQ4mCuEQsqU-F-wHoNxYmv86luapk_zWSAhuxnX6QkdP0a9_GTpKiSFYQOrmx1n5-EYapBDQ0N-8ESJ-qSCIzGdcTo5DKVN83LuOn34HWRZTGJyoAgMLH4vwG9Jw5Nqyn6_DamsNr22wHBqz58C_Du-2nYnN1myUJjUquLu2j5QnZ2_9vBQ6vtzBbW2Z2CnRQa7zDDhTTqKMLqnOCGJVq7vAW-u0mlwlaT-qPYHFsTZCw",
-    e: "AOAB",
-  },
-];
+const testJwks: Record<"keys", Array<RsaJkwsUriKey | EcJkwsUriKey>> = {
+  keys: [
+    {
+      kid: "0TNVl32y36mLkCoS-cX30727D5UQ1cXx8EkGs-G1TIO",
+      kty: "RSA",
+      alg: "RS256",
+      use: "sig",
+      n: "lVCaCQR0iyM0IgBXMXTidBDoyQ7GvBlgnHO7Mb8NIyyiKKPzRfwMtBYqIcUcX_p96hewJ0nE5auE-tZ0HZ34_KSpNjxNN1du3IN2Zhh-Hf0LuxAgXSyfo6xWYQ7KJtMVLecFnYggPA-zf7crWcIE-O_PbrNMMA9ci2eR5GyZlNxQEwR_k63gOsp9Ejfavl0kDNAFLDfeazUW5Rdm0nf5qkuiJOdy26ZvT3gN_Da7htjB2g7KBDCq72Apxt7c4VwK-icYtEy2nn_zuN1fUDCpXrt8QZ8oG9bL2BiSB2Oi5X1c5rvgOICxoin7HyW63f6OKeNCjoo2BdhylRsum1bqMw",
+      e: "AOAB",
+    },
+    {
+      kid: "8BFiCfAxqRECIZR6mCJDkH-HluamiB0KU8Wa4AMj8uN",
+      kty: "RSA",
+      alg: "RSA-OAEP",
+      use: "enc",
+      n: "rvKFkPwbyIhOYPODsToMYIHYImq8Hr9yDHOIAV58BtFSsSmDX-5nxWLbd2fhXDTvTwJT5r0tTR-eVanRWDQJDlnuRICmKQcWAoyfYfkilcQ4mCuEQsqU-F-wHoNxYmv86luapk_zWSAhuxnX6QkdP0a9_GTpKiSFYQOrmx1n5-EYapBDQ0N-8ESJ-qSCIzGdcTo5DKVN83LuOn34HWRZTGJyoAgMLH4vwG9Jw5Nqyn6_DamsNr22wHBqz58C_Du-2nYnN1myUJjUquLu2j5QnZ2_9vBQ6vtzBbW2Z2CnRQa7zDDhTTqKMLqnOCGJVq7vAW-u0mlwlaT-qPYHFsTZCw",
+      e: "AOAB",
+    },
+  ],
+};
 
 describe("Pre-authenticator | Provider Endpoints", () => {
   // let stub: any;
@@ -168,7 +170,7 @@ describe("Pre-authenticator | JWK Keys", () => {
     }
     (axios.get as jest.Mock).mockImplementationOnce(() =>
       Promise.resolve({
-        data: { keys: testJwks },
+        data: testJwks,
         status: 200,
       })
     );
@@ -193,12 +195,12 @@ describe("Pre-authenticator | JWK Keys", () => {
   });
 
   it("then - if stubbed (empty) cache, reads JWKS from providers jwks_uri endpoint.", async () => {
-    const newJwks: Array<RsaJkwsUriKey | EcJkwsUriKey> = testJwks.filter(
+    const newJwks: Array<RsaJkwsUriKey | EcJkwsUriKey> = testJwks.keys.filter(
       (_, index) => index == 0
     );
     (axios.get as jest.Mock).mockImplementationOnce(() =>
       Promise.resolve({
-        data: { keys: newJwks },
+        data: newJwks,
         status: 200,
       })
     );
@@ -220,7 +222,7 @@ describe("Pre-authenticator | JWK Keys", () => {
     expect(jwks).toEqual(newJwks);
   });
 
-  it("lastly - throws error if no jwks_uri endpoints was found.", async () => {
+  it("lastly - throws error if no jwks_uri endpoint was found.", async () => {
     (axios.get as jest.Mock).mockImplementationOnce(() =>
       Promise.resolve({
         data: "Not found",

@@ -17,10 +17,12 @@ const dotenvFile: DotenvFile = {
   APP_VERSION: "0.7.5",
   APP_PORT: 8080,
   ENVIRONMENT: "production",
+  HOST_URI: "http://localhost:4181",
   OIDC_ISSUER_URL: "https://dev.accounts.dummy.com/realms/dummy",
   OIDC_CLIENT_ID: "dummy-id",
   OIDC_CLIENT_SECRET: "dummy-secret",
-  OIDC_VALIDATION_TYPE: "jwk",
+  OIDC_VALIDATION_TYPE: "jwt",
+  LOGIN_WHEN_NO_TOKEN: false,
 };
 
 describe("Validator for dotenv files", () => {
@@ -65,6 +67,42 @@ describe("Validator for dotenv files", () => {
     expect(() => validateDotenvFile()).toThrow(Error);
   });
 
+  it("fails if the `HOST_URI` obligatory variable is missing.", () => {
+    const corruptedDotenvFile = withoutKey(dotenvFile, "HOST_URI");
+    process.env = {
+      ...process.env,
+      ...stringifyObjectValues(corruptedDotenvFile),
+    };
+    expect(() => validateDotenvFile()).toThrow(Error);
+  });
+
+  it("fails if the `LOGIN_WHEN_NO_TOKEN` obligatory variable is missing.", () => {
+    const corruptedDotenvFile = withoutKey(dotenvFile, "LOGIN_WHEN_NO_TOKEN");
+    process.env = {
+      ...process.env,
+      ...stringifyObjectValues(corruptedDotenvFile),
+    };
+    expect(() => validateDotenvFile()).toThrow(Error);
+  });
+
+  it("fails if the `LOGIN_WHEN_NO_TOKEN` obligatory variable has a wrong type.", () => {
+    process.env = {
+      ...process.env,
+      ...stringifyObjectValues(dotenvFile),
+    };
+    const boolTypes = [true, "true", "True", "1", false, "false", "False", "0"];
+
+    boolTypes.forEach( type => {
+      process.env.LOGIN_WHEN_NO_TOKEN = String(type);
+      expect(() => validateDotenvFile()).not.toThrow(Error)
+    })
+    process.env.LOGIN_WHEN_NO_TOKEN = "-1";
+    expect(() => validateDotenvFile()).toThrow(Error);
+
+    process.env.LOGIN_WHEN_NO_TOKEN = "dummy";
+    expect(() => validateDotenvFile()).toThrow(Error);
+  });
+
   it("fails if the `OIDC_ISSUER_URL` obligatory variable is missing.", () => {
     const corruptedDotenvFile = withoutKey(dotenvFile, "OIDC_ISSUER_URL");
     process.env = {
@@ -106,7 +144,7 @@ describe("Validator for dotenv files", () => {
       ...process.env,
       ...stringifyObjectValues(dotenvFile),
     };
-    process.env.OIDC_VALIDATION_TYPE = "jwk";
+    process.env.OIDC_VALIDATION_TYPE = "jwt";
     expect(() => validateDotenvFile()).not.toThrow(Error);
 
     process.env.OIDC_VALIDATION_TYPE = "introspection";

@@ -1,6 +1,21 @@
 import axios from "axios";
+import { createLocalJWKSet, jwtVerify } from "jose";
+import type { JSONWebKeySet, JWTPayload } from "jose";
 
 import { OidcTokenCoreBody, InactiveOidcToken } from "../models/authModel";
+import { getJwkKeys } from "./preAuth";
+
+export const getRandomString = (length: number) => {
+  let randomString = "";
+  const possible =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  for (var i = 0; i < length; i++) {
+    randomString += possible.charAt(
+      Math.floor(Math.random() * possible.length)
+    );
+  }
+  return randomString;
+};
 
 /**
  * Validates access token in opaque way.
@@ -31,5 +46,24 @@ export const introspectToken = async (
   } catch (err) {
     console.error(err);
     throw err;
+  }
+};
+
+export const verifyTokenViaJwt = async (token: string): Promise<JWTPayload> => {
+  if (!token.includes(".")) {
+    throw new Error("JWT token must contain at least one period `.`!");
+  }
+  const JWKS = createLocalJWKSet((await getJwkKeys()) as JSONWebKeySet);
+
+  const { payload, protectedHeader } = await jwtVerify(token, JWKS, {
+    issuer: process.env.OIDC_ISSUER_URL,
+    // audience: process.env.OIDC_CLIENT_ID,
+  });
+  return payload;
+};
+
+export const verifyTokenViaIntrospection = async (token: string) => {
+  if (!token.includes(".")) {
+    throw new Error("JWT token must contain at least one period `.`!");
   }
 };
