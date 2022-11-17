@@ -4,6 +4,11 @@ import type { JSONWebKeySet, JWTPayload } from "jose";
 
 import { OidcTokenCoreBody, InactiveOidcToken } from "../models/authModel";
 import { getJwkKeys } from "./preAuth";
+import { logger } from "./logger";
+
+const JWT_STRICT_AUDIENCE = ["true", "True", "1"].includes(
+  process.env.JWT_STRICT_AUDIENCE!
+);
 
 export const getRandomString = (length: number) => {
   let randomString = "";
@@ -44,11 +49,17 @@ export const introspectToken = async (
     }
     return data;
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     throw err;
   }
 };
 
+/**
+ * Verify token via JWT - decode it using providers JWK Keys.
+ *
+ * @param token JWT access_token
+ * @returns decoded access_token payload
+ */
 export const verifyTokenViaJwt = async (token: string): Promise<JWTPayload> => {
   if (!token.includes(".")) {
     throw new Error("JWT token must contain at least one period `.`!");
@@ -57,11 +68,19 @@ export const verifyTokenViaJwt = async (token: string): Promise<JWTPayload> => {
 
   const { payload, protectedHeader } = await jwtVerify(token, JWKS, {
     issuer: process.env.OIDC_ISSUER_URL,
-    // audience: process.env.OIDC_CLIENT_ID,
+    audience: JWT_STRICT_AUDIENCE ? process.env.OIDC_CLIENT_ID : undefined,
   });
   return payload;
 };
 
+/**
+ * Verify token via Token Introspection - validate access_token on the
+ * provider authorization server.
+ *
+ * @param token JWT access_token
+ * @returns decoded access_token payload
+ * @todo
+ */
 export const verifyTokenViaIntrospection = async (token: string) => {
   if (!token.includes(".")) {
     throw new Error("JWT token must contain at least one period `.`!");

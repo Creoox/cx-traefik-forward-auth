@@ -23,6 +23,7 @@ const dotenvFile: DotenvFile = {
   OIDC_CLIENT_SECRET: "dummy-secret",
   OIDC_VALIDATION_TYPE: "jwt",
   LOGIN_WHEN_NO_TOKEN: false,
+  JWT_STRICT_AUDIENCE: false,
 };
 
 describe("Validator for dotenv files", () => {
@@ -103,6 +104,33 @@ describe("Validator for dotenv files", () => {
     expect(() => validateDotenvFile()).toThrow(Error);
   });
 
+  it("fails if the `JWT_STRICT_AUDIENCE` obligatory variable is missing.", () => {
+    const corruptedDotenvFile = withoutKey(dotenvFile, "JWT_STRICT_AUDIENCE");
+    process.env = {
+      ...process.env,
+      ...stringifyObjectValues(corruptedDotenvFile),
+    };
+    expect(() => validateDotenvFile()).toThrow(Error);
+  });
+
+  it("fails if the `JWT_STRICT_AUDIENCE` obligatory variable has a wrong type.", () => {
+    process.env = {
+      ...process.env,
+      ...stringifyObjectValues(dotenvFile),
+    };
+    const boolTypes = [true, "true", "True", "1", false, "false", "False", "0"];
+
+    boolTypes.forEach( type => {
+      process.env.JWT_STRICT_AUDIENCE = String(type);
+      expect(() => validateDotenvFile()).not.toThrow(Error)
+    })
+    process.env.JWT_STRICT_AUDIENCE = "-1";
+    expect(() => validateDotenvFile()).toThrow(Error);
+
+    process.env.JWT_STRICT_AUDIENCE = "dummy";
+    expect(() => validateDotenvFile()).toThrow(Error);
+  });
+
   it("fails if the `OIDC_ISSUER_URL` obligatory variable is missing.", () => {
     const corruptedDotenvFile = withoutKey(dotenvFile, "OIDC_ISSUER_URL");
     process.env = {
@@ -121,13 +149,13 @@ describe("Validator for dotenv files", () => {
     expect(() => validateDotenvFile()).toThrow(Error);
   });
 
-  it("fails if the `OIDC_CLIENT_SECRET` obligatory variable is missing.", () => {
+  it("passes if the `OIDC_CLIENT_SECRET` obligatory variable is missing.", () => {
     const corruptedDotenvFile = withoutKey(dotenvFile, "OIDC_CLIENT_SECRET");
     process.env = {
       ...process.env,
       ...stringifyObjectValues(corruptedDotenvFile),
     };
-    expect(() => validateDotenvFile()).toThrow(Error);
+    expect(() => validateDotenvFile()).not.toThrow(Error);
   });
 
   it("fails if the `OIDC_VALIDATION_TYPE` obligatory variable is missing.", () => {

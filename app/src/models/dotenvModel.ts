@@ -20,6 +20,7 @@ type ValidationType = typeof validationTypes[number];
 const dotenvVars_optionalStr = [
   "APP_NAME",
   "APP_VERSION",
+  "OIDC_CLIENT_SECRET",
   "COOKIE_NAME",
   "SESSION_SECRET",
 ] as const;
@@ -30,9 +31,8 @@ const dotenvVars_obligatoryStr = [
   "HOST_URI",
   "OIDC_ISSUER_URL",
   "OIDC_CLIENT_ID",
-  "OIDC_CLIENT_SECRET",
 ] as const;
-const dotenvVars_obligatoryBool = ["LOGIN_WHEN_NO_TOKEN"] as const;
+const dotenvVars_obligatoryBool = ["LOGIN_WHEN_NO_TOKEN", "JWT_STRICT_AUDIENCE"] as const;
 const dotenvVars_obligatoryEnv = ["ENVIRONMENT"] as const;
 const dotenvVars_obligatoryVal = ["OIDC_VALIDATION_TYPE"] as const;
 
@@ -48,6 +48,7 @@ export const dotenvVars = [
   ...dotenvVars_optionalStr,
   ...dotenvVars_optionalNum,
   ...dotenvVars_obligatoryStr,
+  ...dotenvVars_obligatoryBool,
   ...dotenvVars_obligatoryEnv,
   ...dotenvVars_obligatoryVal,
 ];

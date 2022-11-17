@@ -21,65 +21,46 @@ h1 {
   margin: 40px 0 20px;
 }
 
-.lock {
-  border-radius: 5px;
-  width: 55px;
-  height: 45px;
-  background-color: #333;
-  animation: dip 1s;
-  animation-delay: 1.5s;
-}
-.lock::before, .lock::after {
-  content: "";
-  position: absolute;
-  border-left: 5px solid #333;
-  height: 20px;
-  width: 15px;
-  left: calc(50% - 12.5px);
-}
-.lock::before {
-  top: -30px;
-  border: 5px solid #333;
-  border-bottom-color: transparent;
-  border-radius: 15px 15px 0 0;
-  height: 30px;
-  animation: lock 2s, spin 2s;
-}
-.lock::after {
-  top: -10px;
-  border-right: 5px solid transparent;
-  animation: spin 2s;
+/* Animation property */
+button {
+  animation: wiggle 2s linear infinite;
 }
 
-@keyframes lock {
-  0% {
-    top: -45px;
+/* Keyframes */
+@keyframes wiggle {
+  0%, 7% {
+    transform: rotateZ(0);
   }
-  65% {
-    top: -45px;
+  15% {
+    transform: rotateZ(-15deg);
   }
-  100% {
-    top: -30px;
+  20% {
+    transform: rotateZ(10deg);
+  }
+  25% {
+    transform: rotateZ(-10deg);
+  }
+  30% {
+    transform: rotateZ(6deg);
+  }
+  35% {
+    transform: rotateZ(-4deg);
+  }
+  40%, 100% {
+    transform: rotateZ(0);
   }
 }
-@keyframes spin {
-  0% {
-    transform: scaleX(-1);
-    left: calc(50% - 30px);
-  }
-  65% {
-    transform: scaleX(1);
-    left: calc(50% - 12.5px);
-  }
-}
-@keyframes dip {
-  0% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(10px);
-  }
-  100% {
-    transform: translateY(0px);
-  }
+
+button {
+  height: 4em;
+  width: 7em;
+  
+  background: #444;
+  background: linear-gradient(top, #555, #333);
+  border: none;
+  border-top: 3px solid orange;
+  border-radius: 0 0 0.2em 0.2em;
+  font-family: "Lato", sans-serif;
+  font-size: 1em;
+  transform-origin: 50% 5em;
 }

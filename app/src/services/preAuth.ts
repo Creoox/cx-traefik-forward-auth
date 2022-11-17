@@ -8,6 +8,7 @@ import type {
   RsaJkwsUriKey,
   EcJkwsUriKey,
 } from "../models/authModel";
+import { logger } from "./logger";
 
 /**
  * Simple caching mechanism. Exported mostly for testing purposes.
@@ -42,7 +43,7 @@ const receiveProviderEndpoints = async (): Promise<OidcConfigEndpoints> => {
     }
     return data;
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     throw err;
   }
 };
@@ -70,7 +71,7 @@ const receiveJkwsUri = async (
     }
     return data;
   } catch (err) {
-    console.error(err);
+    logger.error(err);
     throw err;
   }
 };
@@ -126,12 +127,12 @@ export const getJwkKeys = async (): Promise<
   }
 
   if (!isAnyKeyValid) {
-    console.error(
-      "Error: There is not a valid key in the Provider's jkws_uri endpoint!"
+    logger.error(
+      "There is not a valid key in the Provider's jkws_uri endpoint!"
     );
   } else if (!areAllKeysValid) {
-    console.warn(
-      "Warning: not all obtained JWK Keys are valid! Make sure it is a valid OIDC provider."
+    logger.warn(
+      "Not all obtained JWK Keys are valid! Make sure it is a valid OIDC provider."
     );
   }
   return jwks;
@@ -139,7 +140,7 @@ export const getJwkKeys = async (): Promise<
 
 /**
  * Initialize OIDC Client for authentication (log-in).
- * 
+ *
  * @returns OIDC Client for given provider
  */
 export const initOidcClient = async (): Promise<BaseClient> => {

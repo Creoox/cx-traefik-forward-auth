@@ -7,6 +7,7 @@ import NodeCache from "node-cache";
 import { validateDotenvFile } from "./models/dotenvModel";
 import { getJwkKeys, initOidcClient } from "./services/preAuth";
 import { verifyTokenViaJwt } from "./services/auth";
+import { logger } from "./services/logger";
 
 dotenv.config();
 const DEV_ENV = "development";
@@ -41,8 +42,12 @@ app.set("view engine", "ejs");
 const loginCache = new NodeCache({ stdTTL: 10 * 60 });
 let oidcClient: BaseClient;
 
-// middleware to test if authenticated
-const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
+// middleware to test if authenticated via session cookie
+const isSessionEstablished = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   if (LOGIN_WHEN_NO_TOKEN && !!(req.session as any).access_token) {
     next();
   } else {
@@ -52,9 +57,9 @@ const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
 
 app.get(
   "/",
-  isAuthenticated,
+  isSessionEstablished,
   async (req: Request, res: Response): Promise<void> => {
-    console.log("/ (isAuthenticated)");
+    logger.debug(`Call to '/' (session) from ${req.ip}`);
     const content = await getJwkKeys();
     res.status(200).json(content).end();
 
@@ -67,7 +72,7 @@ app.get(
 );
 
 app.get("/", async (req: Request, res: Response): Promise<void> => {
-  console.log("/");
+  logger.debug(`Call to '/' from ${req.ip}`);
   if (req.headers.authorization) {
     const authHeader = req.headers.authorization.split(" ");
     if (authHeader.length != 2) {
@@ -90,7 +95,7 @@ app.get("/", async (req: Request, res: Response): Promise<void> => {
       //   req.url = String(new URL(req.headers["X-Forwarded-Uri"] as string));
       // }
     } catch (err) {
-      console.error(err);
+      logger.error(err);
       res.status(403).render("403/index.ejs");
       return;
     }
@@ -118,11 +123,11 @@ app.get("/", async (req: Request, res: Response): Promise<void> => {
 app.get(
   "/_oauth",
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    console.log("_oauth");
+    logger.debug(`Call to '/_oauth' from ${req.ip}`);
     const params = oidcClient.callbackParams(req);
     const code_verifier = loginCache.get(req.ip) as string;
     if (!code_verifier) {
-      return next("Couldn't get code_verifier from the cache.");
+      return next("Code has expired. Please login once again.");
     }
     const tokenSet = await oidcClient.callback(
       `${process.env.HOST_URI}/_oauth`,
@@ -166,24 +171,26 @@ try {
   validateDotenvFile();
   if (LOGIN_WHEN_NO_TOKEN) {
     if (process.env.NODE_ENV === PROD_ENV) {
-      console.warn(`[WARNING] Log-in feature is not meant for ${PROD_ENV}`);
+      logger.warn(`Log-in feature is not meant for ${PROD_ENV}!`);
     }
     initOidcClient()
       .then((client) => {
         oidcClient = client;
-        console.log(`[INFO] OIDC Client has been initialized`);
+        logger.info("OIDC Client has been initialized");
       })
       .catch((err) => {
-        console.error(err);
+        logger.error(err);
         process.exit(1);
       });
   }
 
   app.listen(PORT, (): void => {
-    console.log(`[INFO] Server Running here 👉 http://localhost:${PORT}`);
+    logger.info(
+      `Server Running here -> http://0.0.0.0:${PORT} in ${process.env.NODE_ENV} mode`
+    );
   });
 } catch (err) {
-  console.error(err);
+  logger.error(err);
   // process.kill(process.pid, "SIGTERM");
   process.exit(1);
 }
