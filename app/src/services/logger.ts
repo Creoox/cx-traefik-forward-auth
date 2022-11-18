@@ -20,6 +20,9 @@ const transports = {
   }),
 };
 
+/**
+ * Application logger.
+ */
 export const logger = winston.createLogger({
   level: process.env.NODE_ENV === PROD_ENV ? "warn" : "debug",
   format: combine(

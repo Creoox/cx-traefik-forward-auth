@@ -21,9 +21,10 @@ export const initOidcClient = async (): Promise<void> => {
 /**
  * Return OIDC Client.
  *
+ * @returns current oidcClient
  * @throws Error if OIDC Client hasn't been initialized.
  */
-export const getOidcClient = () => {
+export const getOidcClient = (): BaseClient => {
   if (!oidcClient) {
     throw new Error("OIDC Client hasn't been initialized.");
   }

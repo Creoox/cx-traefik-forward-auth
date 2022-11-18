@@ -1,3 +1,9 @@
+/**
+ * Generates (pseudo) random string.
+ * 
+ * @param length of the generated random string
+ * @returns random string
+ */
 export const getRandomString = (length: number) => {
   let randomString = "";
   const possible =
@@ -14,8 +20,8 @@ export const getRandomString = (length: number) => {
  * Retruns object with environment variables.
  *
  * @param port port for current server
- * @param loginWhenNoToken
- * @param prod
+ * @param loginWhenNoToken env variable
+ * @param isProd to distinguish if it's production env
  * @returns object with environment variables
  */
 export const getEnvInfo = (
@@ -34,6 +40,13 @@ export const getEnvInfo = (
   environment: !isProd ? process.env.NODE_ENV : undefined,
 });
 
+/**
+ * Get the 'state' parameter form url/
+ * 
+ * @param url all url to get the parameter from
+ * @param authEndpoint url part before '?' sign
+ * @returns state parameter
+ */
 export const getStateParam = (url: string, authEndpoint: string): string => {
   return url
     .replace(authEndpoint + "?", "")

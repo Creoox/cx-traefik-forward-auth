@@ -8,16 +8,17 @@ var authCache: NodeCache;
  *
  * @field stdTTL keeps hardcoded expiration time (seconds).
  */
-export const initLoginCache = () => {
+export const initLoginCache = (): void => {
   loginCache = new NodeCache({ stdTTL: 10 * 60 });
 };
 
 /**
  * Return Login Cache.
  *
+ * @returns current loginCache
  * @throws Error if Login Cache hasn't been initialized.
  */
-export const getLoginCache = () => {
+export const getLoginCache = (): NodeCache => {
   if (!loginCache) {
     throw new Error("Login Cache hasn't been initialized.");
   }
@@ -29,16 +30,17 @@ export const getLoginCache = () => {
  *
  * @field stdTTL keeps hardcoded expiration time (seconds).
  */
-export const initAuthCache = () => {
+export const initAuthCache = (): void => {
   authCache = new NodeCache({ stdTTL: 60 * 60 });
 };
 
 /**
  * Return Authentication Cache.
  *
+ * @returns current authCache
  * @throws Error if Login Cache hasn't been initialized.
  */
-export const getAuthCache = () => {
+export const getAuthCache = (): NodeCache => {
   if (!authCache) {
     throw new Error("Authentication Cache hasn't been initialized.");
   }
