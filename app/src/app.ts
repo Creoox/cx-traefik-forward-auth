@@ -92,14 +92,11 @@ const oauthFunc = async (
       if (err) {
         return next(err);
       }
-      res.req.method = req.headers["x-forwarded-method"] as string;
-      req.headers.host = req.headers["x-forwarded-host"] as string;
       if (req.headers["x-forwarded-uri"]) {
         const originSchema = req.headers["x-forwarded-proto"];
         const originHost = req.headers["x-forwarded-host"];
         const originUri = req.headers["x-forwarded-uri"];
         const url = `${originSchema}://${originHost}${originUri}`;
-        // req.headers["x-forwarded-uri"] = cache.forwardUri;
         res.redirect(url);
       } else {
         return next(new Error("Missing `X-Forwarded-Uri` Header"));
@@ -118,10 +115,9 @@ app.get(
   (req: Request, res: Response, next: NextFunction): void => {
     logger.debug(`Call to '/' (session) from ${req.ip}`);
     if ((req.headers["x-forwarded-uri"] as string).includes("_oauth")) {
-      const forwardedUriParams = (req.headers["x-forwarded-uri"] as string)
+      const state = (req.headers["x-forwarded-uri"] as string)
         .replace("/_oauth" + "?", "")
-        .split("&");
-      const state = forwardedUriParams
+        .split("&")
         .filter(
           (param) =>
             param.includes("state=") && !param.includes("session_state=")
@@ -131,22 +127,15 @@ app.get(
       if (!cache) {
         return next("Code has expired. Please login once again.");
       }
-      req.headers["x-forwarded-uri"] = cache.forwardedUri;
-      res.header("x-forwarded-uri", cache.forwardedUri);
-
-      res.req.method = req.headers["x-forwarded-method"] as string;
-      res.header({ Host: req.headers["x-forwarded-host"] });
-      res.header({ Host: req.headers["x-forwarded-host"] });
-      if (req.headers["x-forwarded-uri"]) {
-        const originSchema = req.headers["x-forwarded-proto"];
-        const originHost = req.headers["x-forwarded-host"];
-        const originUri = req.headers["x-forwarded-uri"];
-        const url = `${originSchema}://${originHost}${originUri}`;
-        res.redirect(url);
-        return;
-      } else {
+      if (!cache.forwardedUri) {
         return next(new Error("Missing `X-Forwarded-Uri` Header"));
       }
+      const originSchema = cache.forwardedSchema;
+      const originHost = cache.forwardedHost;
+      const originUri = cache.forwardedUri;
+      const url = `${originSchema}://${originHost}${originUri}`;
+      res.redirect(url);
+      return;
     }
     res.sendStatus(200);
     return;
@@ -198,6 +187,8 @@ app.get(
       loginCache.has(random_state) ? loginCache.del(random_state) : null;
       loginCache.set(random_state, {
         code_verifier,
+        forwardedSchema: req.headers["x-forwarded-proto"],
+        forwardedHost: req.headers["x-forwarded-host"],
         forwardedUri: req.headers["x-forwarded-uri"],
       });
 
