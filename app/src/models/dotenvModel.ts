@@ -23,6 +23,7 @@ const dotenvVars_optionalStr = [
   "OIDC_CLIENT_SECRET",
   "COOKIE_NAME",
   "SESSION_SECRET",
+  "AUTH_ENDPOINT",
 ] as const;
 const dotenvVars_optionalNum = ["APP_PORT"] as const;
 
@@ -32,7 +33,10 @@ const dotenvVars_obligatoryStr = [
   "OIDC_ISSUER_URL",
   "OIDC_CLIENT_ID",
 ] as const;
-const dotenvVars_obligatoryBool = ["LOGIN_WHEN_NO_TOKEN", "JWT_STRICT_AUDIENCE"] as const;
+const dotenvVars_obligatoryBool = [
+  "LOGIN_WHEN_NO_TOKEN",
+  "JWT_STRICT_AUDIENCE",
+] as const;
 const dotenvVars_obligatoryEnv = ["ENVIRONMENT"] as const;
 const dotenvVars_obligatoryVal = ["OIDC_VALIDATION_TYPE"] as const;
 

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, jest } from "@jest/globals";
+import { beforeAll, beforeEach, describe, expect, it, jest } from "@jest/globals";
 import axios from "axios";
 // import sinon from "sinon";
 // import proxyquire from "proxyquire";
@@ -13,10 +13,10 @@ import type {
 import {
   CACHE_PROVIDER_ENDPOINTS,
   CACHE_PROVIDER_JWKS,
-  authCache,
   getProviderEndpoints,
   getJwkKeys,
 } from "../../src/services/preAuth";
+import { initAuthCache, getAuthCache } from "../../src/states/cache";
 
 jest.mock("axios");
 
@@ -74,6 +74,10 @@ describe("Pre-authenticator | Provider Endpoints", () => {
   //   });
   // });
 
+  beforeAll( () => {
+    initAuthCache();
+  })
+
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -123,9 +127,9 @@ describe("Pre-authenticator | Provider Endpoints", () => {
     // .expect(await stub.getProviderEndpoints())
     // .to.eq(withoutKey(testOidcEndpoints, "introspection_endpoint"));
 
-    // TODO: workaround with overwriting authCache - in future use stub instead
-    if (authCache.has(CACHE_PROVIDER_ENDPOINTS)) {
-      authCache.del(CACHE_PROVIDER_ENDPOINTS);
+    // TODO: workaround with overwriting getAuthCache() - in future use stub instead
+    if (getAuthCache().has(CACHE_PROVIDER_ENDPOINTS)) {
+      getAuthCache().del(CACHE_PROVIDER_ENDPOINTS);
     }
     const endpoints = await getProviderEndpoints();
     expect(axios.get).toHaveBeenCalledTimes(1); // There was a new API call
@@ -149,9 +153,9 @@ describe("Pre-authenticator | Provider Endpoints", () => {
       })
     );
 
-    // TODO: workaround with overwriting authCache - in future use stub instead
-    if (authCache.has(CACHE_PROVIDER_ENDPOINTS)) {
-      authCache.del(CACHE_PROVIDER_ENDPOINTS);
+    // TODO: workaround with overwriting getAuthCache() - in future use stub instead
+    if (getAuthCache().has(CACHE_PROVIDER_ENDPOINTS)) {
+      getAuthCache().del(CACHE_PROVIDER_ENDPOINTS);
     }
     await expect(getProviderEndpoints()).rejects.toThrow(Error);
     expect(axios.get).toHaveBeenCalledTimes(1);
@@ -164,9 +168,9 @@ describe("Pre-authenticator | JWK Keys", () => {
   });
 
   it("firstly - reads JWKS from providers jwks_uri endpoint.", async () => {
-    // TODO: workaround with overwriting authCache - in future use stub instead
-    if (!authCache.has(CACHE_PROVIDER_ENDPOINTS)) {
-      authCache.set(CACHE_PROVIDER_ENDPOINTS, testOidcEndpoints);
+    // TODO: workaround with overwriting getAuthCache() - in future use stub instead
+    if (!getAuthCache().has(CACHE_PROVIDER_ENDPOINTS)) {
+      getAuthCache().set(CACHE_PROVIDER_ENDPOINTS, testOidcEndpoints);
     }
     (axios.get as jest.Mock).mockImplementationOnce(() =>
       Promise.resolve({
@@ -186,8 +190,8 @@ describe("Pre-authenticator | JWK Keys", () => {
   });
 
   it("secondly - reads JWKS from cache.", async () => {
-    // TODO: workaround with overwriting authCache - in future use stub instead
-    expect(authCache.has(CACHE_PROVIDER_JWKS)).toBe(true);
+    // TODO: workaround with overwriting getAuthCache() - in future use stub instead
+    expect(getAuthCache().has(CACHE_PROVIDER_JWKS)).toBe(true);
 
     const jwks = await getJwkKeys();
     expect(axios.get).not.toHaveBeenCalled();
@@ -205,12 +209,12 @@ describe("Pre-authenticator | JWK Keys", () => {
       })
     );
 
-    // TODO: workaround with overwriting authCache - in future use stub instead
-    if (!authCache.has(CACHE_PROVIDER_ENDPOINTS)) {
-      authCache.set(CACHE_PROVIDER_ENDPOINTS, testOidcEndpoints);
+    // TODO: workaround with overwriting getAuthCache() - in future use stub instead
+    if (!getAuthCache().has(CACHE_PROVIDER_ENDPOINTS)) {
+      getAuthCache().set(CACHE_PROVIDER_ENDPOINTS, testOidcEndpoints);
     }
-    if (authCache.has(CACHE_PROVIDER_JWKS)) {
-      authCache.del(CACHE_PROVIDER_JWKS);
+    if (getAuthCache().has(CACHE_PROVIDER_JWKS)) {
+      getAuthCache().del(CACHE_PROVIDER_JWKS);
     }
     const jwks = await getJwkKeys();
     expect(axios.get).toHaveBeenCalledTimes(1);
@@ -230,12 +234,12 @@ describe("Pre-authenticator | JWK Keys", () => {
       })
     );
 
-    // TODO: workaround with overwriting authCache - in future use stub instead
-    if (!authCache.has(CACHE_PROVIDER_ENDPOINTS)) {
-      authCache.set(CACHE_PROVIDER_ENDPOINTS, testOidcEndpoints);
+    // TODO: workaround with overwriting getAuthCache() - in future use stub instead
+    if (!getAuthCache().has(CACHE_PROVIDER_ENDPOINTS)) {
+      getAuthCache().set(CACHE_PROVIDER_ENDPOINTS, testOidcEndpoints);
     }
-    if (authCache.has(CACHE_PROVIDER_JWKS)) {
-      authCache.del(CACHE_PROVIDER_JWKS);
+    if (getAuthCache().has(CACHE_PROVIDER_JWKS)) {
+      getAuthCache().del(CACHE_PROVIDER_JWKS);
     }
     await expect(getJwkKeys()).rejects.toThrow(Error);
     expect(axios.get).toHaveBeenCalledTimes(1);

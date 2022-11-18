@@ -8,14 +8,11 @@ import type {
   RsaJkwsUriKey,
   EcJkwsUriKey,
 } from "../models/authModel";
+import {initAuthCache, getAuthCache} from "../states/cache"
 import { logger } from "./logger";
 
-/**
- * Simple caching mechanism. Exported mostly for testing purposes.
- *
- * @see  "../../tests/services/preAuth.test.ts"
- */
-export const authCache = new NodeCache({ stdTTL: 60 * 60 });
+// Authentication Cache
+initAuthCache()
 export const CACHE_PROVIDER_ENDPOINTS = "providerEndpoints";
 export const CACHE_PROVIDER_JWKS = "providerJwks";
 
@@ -82,14 +79,14 @@ const receiveJkwsUri = async (
  * @returns providers oidc endpoints
  */
 export const getProviderEndpoints = async (): Promise<OidcConfigEndpoints> => {
-  let endpoints: OidcConfigEndpoints | undefined = authCache.get(
+  let endpoints: OidcConfigEndpoints | undefined = getAuthCache().get(
     CACHE_PROVIDER_ENDPOINTS
   );
 
   if (!endpoints) {
     try {
       endpoints = await receiveProviderEndpoints();
-      authCache.set(CACHE_PROVIDER_ENDPOINTS, endpoints);
+      getAuthCache().set(CACHE_PROVIDER_ENDPOINTS, endpoints);
     } catch (err) {
       throw err;
     }
@@ -106,14 +103,14 @@ export const getJwkKeys = async (): Promise<
   Record<"keys", Array<RsaJkwsUriKey | EcJkwsUriKey>>
 > => {
   let jwks: Record<"keys", Array<RsaJkwsUriKey | EcJkwsUriKey>> | undefined =
-    authCache.get(CACHE_PROVIDER_JWKS);
+    getAuthCache().get(CACHE_PROVIDER_JWKS);
 
   if (!jwks) {
     try {
       const endpoints = await getProviderEndpoints();
       const jwksUriEndpoint = endpoints.jwks_uri;
       jwks = await receiveJkwsUri(jwksUriEndpoint);
-      authCache.set(CACHE_PROVIDER_JWKS, jwks);
+      getAuthCache().set(CACHE_PROVIDER_JWKS, jwks);
     } catch (err) {
       throw err;
     }
@@ -136,22 +133,4 @@ export const getJwkKeys = async (): Promise<
     );
   }
   return jwks;
-};
-
-/**
- * Initialize OIDC Client for authentication (log-in).
- *
- * @returns OIDC Client for given provider
- */
-export const initOidcClient = async (): Promise<BaseClient> => {
-  const issuer = await Issuer.discover(process.env.OIDC_ISSUER_URL as string);
-  return new issuer.Client({
-    client_id: process.env.OIDC_CLIENT_ID!,
-    client_secret: process.env.OIDC_CLIENT_SECRET
-      ? process.env.OIDC_CLIENT_SECRET
-      : undefined,
-    redirect_uris: [`${process.env.HOST_URI}/_oauth`],
-    response_types: ["code"],
-    token_endpoint_auth_method: "none",
-  });
 };

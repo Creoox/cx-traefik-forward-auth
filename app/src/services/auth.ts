@@ -1,14 +1,67 @@
 import axios from "axios";
+import { Request, Response, NextFunction } from "express";
 import { createLocalJWKSet, jwtVerify } from "jose";
 import type { JSONWebKeySet, JWTPayload } from "jose";
 
 import { OidcTokenCoreBody, InactiveOidcToken } from "../models/authModel";
 import { getJwkKeys } from "./preAuth";
+import { AUTH_ENDPOINT, getOidcClient } from "../states/clients";
+import { getLoginCache } from "../states/cache";
 import { logger } from "./logger";
 
 const JWT_STRICT_AUDIENCE = ["true", "True", "1"].includes(
   process.env.JWT_STRICT_AUDIENCE!
 );
+
+/**
+ * Function handling authorization server callback. Mind the 'state' param.
+ */
+export const handleCallback = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  logger.debug(`Call to 'handleCallback' from ${req.url}`);
+
+  const params = getOidcClient().callbackParams(req);
+  if (!params.state) {
+    next(
+      new Error("Missing 'state' parameter in authorization server response.")
+    );
+  }
+  const cache = getLoginCache().get(params.state!) as any;
+  if (!cache) {
+    return next("Code has expired. Please login once again.");
+  }
+
+  const tokenSet = await getOidcClient().callback(
+    `${process.env.HOST_URI}${AUTH_ENDPOINT}`,
+    params,
+    { code_verifier: cache.code_verifier, state: params.state }
+  );
+
+  // create login session
+  req.session.regenerate((err) => {
+    if (err) {
+      next(err);
+    }
+    (req.session as any).access_token = tokenSet.access_token;
+    req.session.save((err) => {
+      if (err) {
+        return next(err);
+      }
+      if (req.headers["x-forwarded-uri"]) {
+        const originSchema = req.headers["x-forwarded-proto"];
+        const originHost = req.headers["x-forwarded-host"];
+        const originUri = req.headers["x-forwarded-uri"];
+        const url = `${originSchema}://${originHost}${originUri}`;
+        res.redirect(url);
+      } else {
+        return next(new Error("Missing `X-Forwarded-Uri` Header"));
+      }
+    });
+  });
+};
 
 /**
  * Validates access token in opaque way.

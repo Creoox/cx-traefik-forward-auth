@@ -1,19 +1,91 @@
 <!DOCTYPE html>
-<html lang="en" >
-<head>
-  <meta charset="UTF-8">
-  <title>404 Not Found</title>
-  <link rel="stylesheet" href="./404/style.css" type="text/css">
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>404 Not Found</title>
+    <!-- <link rel="stylesheet" href="./404/style.css" type="text/css" /> -->
+    <style type="text/css">
+      @import url("https://fonts.googleapis.com/css?family=Lato");
+      * {
+        position: relative;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Lato", sans-serif;
+      }
 
-</head>
-<body>
-<!-- partial:index.partial.html -->
-<button>...</button>
-<div class="message" style="text-align:center">
-  <h1><b>404 Not Found</b></h1>
-  <p>We couldn't find the requested page.</p>
-</div>
-<!-- partial -->
-  
-</body>
+      body {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        /* background: linear-gradient(to bottom right, #EEE, #AAA); */
+        background: linear-gradient(
+          to bottom right,
+          rgb(200, 200, 200),
+          rgb(100, 100, 100)
+        );
+      }
+
+      h1 {
+        margin: 40px 0 20px;
+      }
+
+      /* Animation property */
+      button {
+        animation: wiggle 2s linear infinite;
+      }
+
+      /* Keyframes */
+      @keyframes wiggle {
+        0%,
+        7% {
+          transform: rotateZ(0);
+        }
+        15% {
+          transform: rotateZ(-15deg);
+        }
+        20% {
+          transform: rotateZ(10deg);
+        }
+        25% {
+          transform: rotateZ(-10deg);
+        }
+        30% {
+          transform: rotateZ(6deg);
+        }
+        35% {
+          transform: rotateZ(-4deg);
+        }
+        40%,
+        100% {
+          transform: rotateZ(0);
+        }
+      }
+
+      button {
+        height: 4em;
+        width: 7em;
+
+        background: #444;
+        background: linear-gradient(top, #555, #333);
+        border: none;
+        border-top: 3px solid orange;
+        border-radius: 0 0 0.2em 0.2em;
+        font-family: "Lato", sans-serif;
+        font-size: 1em;
+        transform-origin: 50% 5em;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- partial:index.partial.html -->
+    <button>...</button>
+    <div class="message" style="text-align: center">
+      <h1><b>404 Not Found</b></h1>
+      <p>We couldn't find the requested page.</p>
+    </div>
+    <!-- partial -->
+  </body>
 </html>

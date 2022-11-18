@@ -2,8 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>500 Server Error</title>
-    <!-- <link rel="stylesheet" href="./500/style.css" type="text/css" /> -->
+    <title>Access Token</title>
+
     <style type="text/css">
       @import url("https://fonts.googleapis.com/css?family=Lato");
       * {
@@ -18,6 +18,7 @@
         height: 100vh;
         display: flex;
         flex-direction: column;
+        flex-wrap: wrap;
         justify-content: center;
         align-items: center;
         /* background: linear-gradient(to bottom right, #EEE, #AAA); */
@@ -31,18 +32,19 @@
       h1 {
         margin: 40px 0 20px;
       }
+
+      .container {
+        width: 70vw;
+        height: auto;
+        margin-right: auto;
+        margin-left: auto;
+      }
     </style>
   </head>
   <body>
-    <!-- partial:index.partial.html -->
-    <div class="message" style="text-align: center">
-      <h1><b>500 Internal Server Error</b></h1>
-      <p>We've encountered Internal Server Error.</p>
-      <p>
-        You can report the bug under this link:
-        <a href="https://creoox.com/en/contact/">contact form</a>
-      </p>
+    <div class="container" style="text-align: center">
+      <h1><b>Acess Token</b></h1>
+      <p><%= access_token %></p>
     </div>
-    <!-- partial -->
   </body>
 </html>
