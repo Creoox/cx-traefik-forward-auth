@@ -132,3 +132,15 @@ export const getJwkKeys = async (): Promise<
   }
   return jwks;
 };
+
+/**
+ * Check if verification via introspection is possible.
+ * 
+ * @throws Error if provider does not expose introspection_endpoint
+ */
+export const checkIfIntrospectionPossible = async (): Promise<void> => {
+  const providerEndpoints = await getProviderEndpoints();
+  if (!providerEndpoints.introspection_endpoint) {
+    throw new Error("Provider does not expose introspection_endpoint.");
+  }
+};

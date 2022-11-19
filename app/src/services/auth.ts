@@ -3,8 +3,8 @@ import { Request, Response, NextFunction } from "express";
 import { createLocalJWKSet, jwtVerify } from "jose";
 import type { JSONWebKeySet, JWTPayload } from "jose";
 
-import { OidcTokenCorePayload, InactiveOidcToken } from "../models/authModel";
-import { getJwkKeys } from "./preAuth";
+import type { ActiveOidcToken, InactiveOidcToken } from "../models/authModel";
+import { getJwkKeys, getProviderEndpoints } from "./preAuth";
 import { AUTH_ENDPOINT, getOidcClient } from "../states/clients";
 import { getLoginCache } from "../states/cache";
 import { logger } from "./logger";
@@ -15,7 +15,9 @@ const JWT_STRICT_AUDIENCE = ["true", "True", "1"].includes(
 
 /**
  * Function handling authorization server callback. Mind the 'state' param.
+ * Not included in tests coverage as it part of express feature.
  */
+/* istanbul ignore next */
 export const handleCallback = async (
   req: Request,
   res: Response,
@@ -64,38 +66,6 @@ export const handleCallback = async (
 };
 
 /**
- * Validates access token in opaque way.
- *
- * @param accessToken if empty then connectorId has to be set
- * @returns promise to ConnectorData for given connector
- */
-export const introspectToken = async (
-  accessToken: string
-): Promise<OidcTokenCorePayload | InactiveOidcToken> => {
-  if (accessToken === "") {
-    throw new Error("Field `accessToken` cannot be empty!");
-  }
-  const queryString = ``;
-  try {
-    const { data, status } = await axios.post<
-      OidcTokenCorePayload | InactiveOidcToken
-    >(`/connectors?${queryString}`, {
-      baseURL: process.env.OIDC_ISSUER_URL,
-      headers: {
-        Accept: "application/json",
-      },
-    });
-    if (status != 200) {
-      throw new Error(`introspectToken returned status: ${status}`);
-    }
-    return data;
-  } catch (err) {
-    logger.error(err);
-    throw err;
-  }
-};
-
-/**
  * Verify token via JWT - decode it using providers JWK Keys.
  *
  * @param token JWT access_token
@@ -125,5 +95,32 @@ export const verifyTokenViaJwt = async (token: string): Promise<JWTPayload> => {
 export const verifyTokenViaIntrospection = async (token: string) => {
   if (!token.includes(".")) {
     throw new Error("JWT token must contain at least one period `.`!");
+  }
+
+  const providerEndpoints = await getProviderEndpoints();
+  try {
+    const { data, status } = await axios.post<
+      ActiveOidcToken | InactiveOidcToken
+    >(providerEndpoints.introspection_endpoint!, {
+      headers: {
+        Accept: "application/json",
+      },
+      body: {
+        client_id: process.env.OIDC_CLIENT_ID,
+        client_secret: process.env.OIDC_CLIENT_SECRET
+          ? process.env.OIDC_CLIENT_SECRET
+          : undefined,
+        token: token,
+      },
+    });
+    if (status != 200) {
+      throw new Error(
+        `Provider introspection_endpoint returned status: ${status}`
+      );
+    }
+    return data;
+  } catch (err) {
+    logger.error(err);
+    throw err;
   }
 };

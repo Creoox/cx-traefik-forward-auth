@@ -1,8 +1,11 @@
-import { beforeEach, describe, expect, it, jest } from "@jest/globals";
+import { afterEach, describe, expect, it, jest } from "@jest/globals";
 // import axios from "axios";
 import { jwtVerify } from "jose";
 
-import { verifyTokenViaJwt } from "../../src/services/auth";
+import {
+  verifyTokenViaJwt,
+  verifyTokenViaIntrospection,
+} from "../../src/services/auth";
 import { getJwkKeys } from "../../src/services/preAuth";
 
 import { testJwks, testTokenPayload } from "../testData";
@@ -10,21 +13,32 @@ import { testJwks, testTokenPayload } from "../testData";
 jest.mock("jose");
 jest.mock("../../src/services/preAuth");
 
-const testToken = "dummyHeder.dummyBody.dummySign";
+const testToken = "dummyHeder.dummyPayload.dummySign";
 const testProtectedHeader = "dummyHeder";
 
 describe("Authenticator | JWK Verifier", () => {
-  beforeEach(() => {
+  afterEach(() => {
     jest.clearAllMocks();
-    // (axios.get as jest.Mock).mockImplementationOnce(() =>
-    //   Promise.resolve({
-    //     data: "dummy data",
-    //     status: 200,
-    //   })
-    // );
   });
 
-  it("verifies JWK token", async () => {
+  it("throws error for invalid token structure", async () => {
+    const invalidToken = "dummy";
+    (getJwkKeys as jest.Mock).mockImplementationOnce(() =>
+      Promise.resolve(testJwks)
+    );
+    (jwtVerify as jest.Mock).mockImplementationOnce(() =>
+      Promise.resolve({
+        payload: testTokenPayload,
+        protectedHeader: testProtectedHeader,
+      })
+    );
+
+    await expect(verifyTokenViaJwt(invalidToken)).rejects.toThrow(Error);
+    expect(getJwkKeys).toHaveBeenCalledTimes(0);
+    expect(jwtVerify).toHaveBeenCalledTimes(0);
+  });
+
+  it("verifies valid JWK token", async () => {
     (getJwkKeys as jest.Mock).mockImplementationOnce(() =>
       Promise.resolve(testJwks)
     );
@@ -39,5 +53,27 @@ describe("Authenticator | JWK Verifier", () => {
     expect(getJwkKeys).toHaveBeenCalledTimes(1);
     expect(jwtVerify).toHaveBeenCalledTimes(1);
     expect(payload).toEqual(testTokenPayload);
+  });
+});
+
+describe("Authenticator | Introspection Verifier", () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("throws error for invalid token structure", async () => {
+    const invalidToken = "dummy";
+        // (axios.get as jest.Mock).mockImplementationOnce(() =>
+    //   Promise.resolve({
+    //     data: "dummy data",
+    //     status: 200,
+    //   })
+    // );
+
+    await expect(verifyTokenViaIntrospection(invalidToken)).rejects.toThrow(
+      Error
+    );
+    // expect(getJwkKeys).toHaveBeenCalledTimes(0);
+    // expect(jwtVerify).toHaveBeenCalledTimes(0);
   });
 });

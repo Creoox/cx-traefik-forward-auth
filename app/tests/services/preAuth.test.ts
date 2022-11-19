@@ -1,5 +1,6 @@
 import {
   afterAll,
+  afterEach,
   beforeAll,
   beforeEach,
   describe,
@@ -12,7 +13,6 @@ import axios from "axios";
 // import proxyquire from "proxyquire";
 // import chai from "chai";
 
-import { withoutKey } from "../utils";
 import type {
   OidcConfigEndpoints,
   RsaJkwsUriKey,
@@ -23,12 +23,16 @@ import {
   CACHE_PROVIDER_JWKS,
   getProviderEndpoints,
   getJwkKeys,
+  checkIfIntrospectionPossible,
 } from "../../src/services/preAuth";
+import { logger } from "../../src/services/logger";
 import { initAuthCache, getAuthCache } from "../../src/states/cache";
 
+import { withoutKey } from "../utils";
 import { testOidcEndpoints, testJwks } from "../testData";
 
 jest.mock("axios");
+jest.mock("../../src/services/logger");
 
 describe("Pre-authenticator | Provider Endpoints", () => {
   // let stub: any;
@@ -54,8 +58,11 @@ describe("Pre-authenticator | Provider Endpoints", () => {
   });
 
   beforeEach(() => {
-    jest.clearAllMocks();
     getAuthCache().flushAll();
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   afterAll(() => {
@@ -135,6 +142,7 @@ describe("Pre-authenticator | Provider Endpoints", () => {
         status: 404,
       })
     );
+    (logger.error as jest.Mock).mockImplementationOnce(() => {});
 
     // TODO: workaround with overwriting getAuthCache() - in future use stub instead
     if (getAuthCache().has(CACHE_PROVIDER_ENDPOINTS)) {
@@ -146,8 +154,16 @@ describe("Pre-authenticator | Provider Endpoints", () => {
 });
 
 describe("Pre-authenticator | JWK Keys", () => {
-  beforeEach(() => {
+  beforeAll(() => {
+    initAuthCache();
+  });
+
+  afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  afterAll(() => {
+    getAuthCache().flushAll();
   });
 
   it("firstly - reads JWKS from providers jwks_uri endpoint.", async () => {
@@ -216,6 +232,7 @@ describe("Pre-authenticator | JWK Keys", () => {
         status: 404,
       })
     );
+    (logger.error as jest.Mock).mockImplementationOnce(() => {});
 
     // TODO: workaround with overwriting getAuthCache() - in future use stub instead
     if (!getAuthCache().has(CACHE_PROVIDER_ENDPOINTS)) {
@@ -226,5 +243,52 @@ describe("Pre-authenticator | JWK Keys", () => {
     }
     await expect(getJwkKeys()).rejects.toThrow(Error);
     expect(axios.get).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("Pre-authenticator | Check introspection", () => {
+  beforeAll(() => {
+    initAuthCache();
+  });
+
+  beforeEach(() => {
+    getAuthCache().flushAll();
+  });
+
+  afterAll(() => {
+    getAuthCache().flushAll();
+  });
+
+  it("throws error if introspection_endpoint is missing", async () => {
+    const invalidOidcEndpoints = withoutKey(
+      testOidcEndpoints,
+      "introspection_endpoint"
+    );
+
+    // TODO: workaround with overwriting getAuthCache() - in future use stub instead
+    if (!getAuthCache().has(CACHE_PROVIDER_ENDPOINTS)) {
+      getAuthCache().set(CACHE_PROVIDER_ENDPOINTS, invalidOidcEndpoints);
+    }
+
+    const endpoints = await getProviderEndpoints();
+    expect(
+      Object.keys(endpoints).filter((el) => el === "introspection_endpoint")
+        .length
+    ).toEqual(0);
+    await expect(checkIfIntrospectionPossible()).rejects.toThrow(Error);
+  });
+
+  it("does not throw error if introspection_endpoint is present", async () => {
+    // TODO: workaround with overwriting getAuthCache() - in future use stub instead
+    if (!getAuthCache().has(CACHE_PROVIDER_ENDPOINTS)) {
+      getAuthCache().set(CACHE_PROVIDER_ENDPOINTS, testOidcEndpoints);
+    }
+
+    const endpoints = await getProviderEndpoints();
+    expect(
+      Object.keys(endpoints).filter((el) => el === "introspection_endpoint")
+        .length
+    ).toEqual(1);
+    await expect(checkIfIntrospectionPossible()).resolves.not.toThrow(Error);
   });
 });

@@ -50,6 +50,9 @@ export interface OidcTokenCorePayload {
   email: string;
 }
 
+export interface ActiveOidcToken extends OidcTokenCorePayload{
+  active: boolean;
+}
 export interface InactiveOidcToken {
   active: boolean;
 }

@@ -4,7 +4,13 @@ import session from "express-session";
 import { generators } from "openid-client";
 
 import { validateDotenvFile } from "./models/dotenvModel";
-import { handleCallback, verifyTokenViaJwt } from "./services/auth";
+import { checkIfIntrospectionPossible } from "./services/preAuth";
+import {
+  handleCallback,
+  verifyTokenViaJwt,
+  verifyTokenViaIntrospection,
+} from "./services/auth";
+import { verifyTokenPayload } from "./services/postAuth";
 import { AUTH_ENDPOINT, initOidcClient, getOidcClient } from "./states/clients";
 import { initLoginCache, getLoginCache } from "./states/cache";
 import { logger } from "./services/logger";
@@ -14,6 +20,8 @@ dotenv.config();
 const PROD_ENV = "production";
 const isProdEnv = process.env.NODE_ENV === PROD_ENV;
 const PORT = process.env.APP_PORT || 4181;
+const VALIDATION_TYPE =
+  process.env.OIDC_VALIDATION_TYPE === "introspection" ? "intro" : "jwt";
 const LOGIN_WHEN_NO_TOKEN = ["true", "True", "1"].includes(
   process.env.LOGIN_WHEN_NO_TOKEN!
 );
@@ -141,7 +149,11 @@ app.get(
       }
       try {
         const token = authHeader[1];
-        await verifyTokenViaJwt(token);
+        const payload =
+          VALIDATION_TYPE === "intro"
+            ? await verifyTokenViaIntrospection(token)
+            : await verifyTokenViaJwt(token);
+        verifyTokenPayload(payload);
       } catch (err) {
         logger.error(err);
         isProdEnv
@@ -211,7 +223,8 @@ app.get(
 );
 
 /**
- * General error handling middleware. Mind that it should be used as the last.
+ * General error handling middleware. Mind that it should be used as the last
+ * one.
  */
 const errorHandler = (
   err: Error,
@@ -242,6 +255,14 @@ try {
         process.exit(1);
       });
     initLoginCache();
+  }
+  if (VALIDATION_TYPE === "intro") {
+    checkIfIntrospectionPossible()
+      .then(() => {})
+      .catch((err) => {
+        logger.error(err);
+        process.exit(1);
+      });
   }
 
   app.listen(PORT, (): void => {

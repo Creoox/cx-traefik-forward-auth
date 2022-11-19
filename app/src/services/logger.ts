@@ -4,6 +4,7 @@ const PROD_ENV = "production";
 
 const { combine, timestamp, label, printf } = winston.format;
 const cxFormat = printf(({ level, message, label, timestamp }) => {
+  /* istanbul ignore next */
   return `${timestamp} ${label}: [${level.toUpperCase()}] ${message}`;
 });
 
