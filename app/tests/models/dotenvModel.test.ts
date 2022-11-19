@@ -21,7 +21,7 @@ const dotenvFile: DotenvFile = {
   OIDC_ISSUER_URL: "https://dev.accounts.dummy.com/realms/dummy",
   OIDC_CLIENT_ID: "dummy-id",
   OIDC_CLIENT_SECRET: "dummy-secret",
-  OIDC_VALIDATION_TYPE: "jwt",
+  OIDC_VERIFICATION_TYPE: "jwt",
   LOGIN_WHEN_NO_TOKEN: false,
   JWT_STRICT_AUDIENCE: false,
 };
@@ -93,10 +93,10 @@ describe("Validator for dotenv files", () => {
     };
     const boolTypes = [true, "true", "True", "1", false, "false", "False", "0"];
 
-    boolTypes.forEach( type => {
+    boolTypes.forEach((type) => {
       process.env.LOGIN_WHEN_NO_TOKEN = String(type);
-      expect(() => validateDotenvFile()).not.toThrow(Error)
-    })
+      expect(() => validateDotenvFile()).not.toThrow(Error);
+    });
     process.env.LOGIN_WHEN_NO_TOKEN = "-1";
     expect(() => validateDotenvFile()).toThrow(Error);
 
@@ -120,10 +120,10 @@ describe("Validator for dotenv files", () => {
     };
     const boolTypes = [true, "true", "True", "1", false, "false", "False", "0"];
 
-    boolTypes.forEach( type => {
+    boolTypes.forEach((type) => {
       process.env.JWT_STRICT_AUDIENCE = String(type);
-      expect(() => validateDotenvFile()).not.toThrow(Error)
-    })
+      expect(() => validateDotenvFile()).not.toThrow(Error);
+    });
     process.env.JWT_STRICT_AUDIENCE = "-1";
     expect(() => validateDotenvFile()).toThrow(Error);
 
@@ -158,8 +158,11 @@ describe("Validator for dotenv files", () => {
     expect(() => validateDotenvFile()).not.toThrow(Error);
   });
 
-  it("fails if the `OIDC_VALIDATION_TYPE` obligatory variable is missing.", () => {
-    const corruptedDotenvFile = withoutKey(dotenvFile, "OIDC_VALIDATION_TYPE");
+  it("fails if the `OIDC_VERIFICATION_TYPE` obligatory variable is missing.", () => {
+    const corruptedDotenvFile = withoutKey(
+      dotenvFile,
+      "OIDC_VERIFICATION_TYPE"
+    );
     process.env = {
       ...process.env,
       ...stringifyObjectValues(corruptedDotenvFile),
@@ -167,18 +170,28 @@ describe("Validator for dotenv files", () => {
     expect(() => validateDotenvFile()).toThrow(Error);
   });
 
-  it("fails if the `OIDC_VALIDATION_TYPE` obligatory variable has a wrong type.", () => {
+  it("fails if the `OIDC_VERIFICATION_TYPE` obligatory variable has a wrong type.", () => {
     process.env = {
       ...process.env,
       ...stringifyObjectValues(dotenvFile),
     };
-    process.env.OIDC_VALIDATION_TYPE = "jwt";
+    process.env.OIDC_VERIFICATION_TYPE = "jwt";
     expect(() => validateDotenvFile()).not.toThrow(Error);
 
-    process.env.OIDC_VALIDATION_TYPE = "introspection";
+    process.env.OIDC_VERIFICATION_TYPE = "introspection";
     expect(() => validateDotenvFile()).not.toThrow(Error);
 
-    process.env.OIDC_VALIDATION_TYPE = "invalid-value";
+    process.env.OIDC_VERIFICATION_TYPE = "invalid-value";
+    expect(() => validateDotenvFile()).toThrow(Error);
+  });
+
+  it("fails if the `OIDC_VERIFICATION_TYPE` is `introspection` and client secret is missing.", () => {
+    process.env = {
+      ...process.env,
+      ...stringifyObjectValues(dotenvFile),
+    };
+    process.env.OIDC_VERIFICATION_TYPE = "introspection";
+    process.env.OIDC_CLIENT_SECRET = undefined;
     expect(() => validateDotenvFile()).toThrow(Error);
   });
 

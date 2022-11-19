@@ -21,7 +21,7 @@ const PROD_ENV = "production";
 const isProdEnv = process.env.NODE_ENV === PROD_ENV;
 const PORT = process.env.APP_PORT || 4181;
 const VALIDATION_TYPE =
-  process.env.OIDC_VALIDATION_TYPE === "introspection" ? "intro" : "jwt";
+  process.env.OIDC_VERIFICATION_TYPE === "introspection" ? "intro" : "jwt";
 const LOGIN_WHEN_NO_TOKEN = ["true", "True", "1"].includes(
   process.env.LOGIN_WHEN_NO_TOKEN!
 );

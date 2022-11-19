@@ -35,7 +35,7 @@ export const getEnvInfo = (
   hostUri: process.env.HOST_URI,
   oidcIssuerUrl: process.env.OIDC_ISSUER_URL,
   oidcClientId: process.env.OIDC_CLIENT_ID,
-  oidcValidationType: process.env.OIDC_VALIDATION_TYPE,
+  oidcValidationType: process.env.OIDC_VERIFICATION_TYPE,
   loginWhenNoToken: loginWhenNoToken ? loginWhenNoToken : undefined,
   environment: !isProd ? process.env.NODE_ENV : undefined,
 });

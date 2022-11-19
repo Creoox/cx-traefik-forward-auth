@@ -2,6 +2,7 @@ import axios from "axios";
 import { Request, Response, NextFunction } from "express";
 import { createLocalJWKSet, jwtVerify } from "jose";
 import type { JSONWebKeySet, JWTPayload } from "jose";
+import qs from "qs";
 
 import type { ActiveOidcToken, InactiveOidcToken } from "../models/authModel";
 import { getJwkKeys, getProviderEndpoints } from "./preAuth";
@@ -99,18 +100,19 @@ export const verifyTokenViaIntrospection = async (token: string) => {
 
   const providerEndpoints = await getProviderEndpoints();
   try {
+    const body = qs.stringify({
+      client_id: process.env.OIDC_CLIENT_ID,
+      client_secret: process.env.OIDC_CLIENT_SECRET
+        ? process.env.OIDC_CLIENT_SECRET
+        : undefined,
+      token: token,
+    });
     const { data, status } = await axios.post<
       ActiveOidcToken | InactiveOidcToken
-    >(providerEndpoints.introspection_endpoint!, {
+    >(providerEndpoints.introspection_endpoint!, body, {
       headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
         Accept: "application/json",
-      },
-      body: {
-        client_id: process.env.OIDC_CLIENT_ID,
-        client_secret: process.env.OIDC_CLIENT_SECRET
-          ? process.env.OIDC_CLIENT_SECRET
-          : undefined,
-        token: token,
       },
     });
     if (status != 200) {
@@ -120,7 +122,7 @@ export const verifyTokenViaIntrospection = async (token: string) => {
     }
     return data;
   } catch (err) {
-    logger.error(err);
+    logger.error(`Provider introspection error: ${err}`);
     throw err;
   }
 };

@@ -38,7 +38,7 @@ const dotenvVars_obligatoryBool = [
   "JWT_STRICT_AUDIENCE",
 ] as const;
 const dotenvVars_obligatoryEnv = ["ENVIRONMENT"] as const;
-const dotenvVars_obligatoryVal = ["OIDC_VALIDATION_TYPE"] as const;
+const dotenvVars_obligatoryVal = ["OIDC_VERIFICATION_TYPE"] as const;
 
 export const dotenvVars_obligatory = [
   ...dotenvVars_obligatoryStr,
@@ -93,6 +93,14 @@ export function validateDotenvFile(): void {
     ) {
       throw new Error(`Invalid value for variable: ${obligVars[variable]}`);
     }
+  }
+  if (
+    process.env.OIDC_VERIFICATION_TYPE === "introspection" &&
+    !process.env.OIDC_CLIENT_SECRET
+  ) {
+    throw new Error(
+      `For introspection verification the client secret must be set`
+    );
   }
 
   const optVars = dotenvVars_optionalNum;
