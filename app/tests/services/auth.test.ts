@@ -63,17 +63,21 @@ describe("Authenticator | Introspection Verifier", () => {
 
   it("throws error for invalid token structure", async () => {
     const invalidToken = "dummy";
-        // (axios.get as jest.Mock).mockImplementationOnce(() =>
-    //   Promise.resolve({
-    //     data: "dummy data",
-    //     status: 200,
-    //   })
-    // );
+
+    (getJwkKeys as jest.Mock).mockImplementationOnce(() =>
+      Promise.resolve(testJwks)
+    );
+    (jwtVerify as jest.Mock).mockImplementationOnce(() =>
+      Promise.resolve({
+        payload: testTokenPayload,
+        protectedHeader: testProtectedHeader,
+      })
+    );
 
     await expect(verifyTokenViaIntrospection(invalidToken)).rejects.toThrow(
       Error
     );
-    // expect(getJwkKeys).toHaveBeenCalledTimes(0);
-    // expect(jwtVerify).toHaveBeenCalledTimes(0);
+    expect(getJwkKeys).toHaveBeenCalledTimes(0);
+    expect(jwtVerify).toHaveBeenCalledTimes(0);
   });
 });

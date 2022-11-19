@@ -9,7 +9,7 @@ import { logger } from "./logger";
  * @throws Error if token is inactive
  * @todo case-based implementation.
  */
-export function verifyTokenPayload<
+export function validateTokenPayload<
   T extends ActiveOidcToken,
   R extends InactiveOidcToken
 >(payload: Partial<T> | R): void {

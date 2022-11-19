@@ -10,7 +10,7 @@ import {
   verifyTokenViaJwt,
   verifyTokenViaIntrospection,
 } from "./services/auth";
-import { verifyTokenPayload } from "./services/postAuth";
+import { validateTokenPayload } from "./services/postAuth";
 import { AUTH_ENDPOINT, initOidcClient, getOidcClient } from "./states/clients";
 import { initLoginCache, getLoginCache } from "./states/cache";
 import { logger } from "./services/logger";
@@ -153,7 +153,7 @@ app.get(
           VALIDATION_TYPE === "intro"
             ? await verifyTokenViaIntrospection(token)
             : await verifyTokenViaJwt(token);
-        verifyTokenPayload(payload);
+        validateTokenPayload(payload);
       } catch (err) {
         logger.error(err);
         isProdEnv
