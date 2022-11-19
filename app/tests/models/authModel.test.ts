@@ -5,37 +5,12 @@ import {
   validateOidcEndpoints,
   validateJkwsUriKey,
 } from "../../src/models/authModel";
-import type {
-  OidcConfigEndpoints,
-  RsaJkwsUriKey,
-} from "../../src/models/authModel";
 
-const obligatoryOidcEndpoints: OidcConfigEndpoints = {
-  issuer: "https://dev.accounts.dummy.com/realms/dummy",
-  authorization_endpoint:
-    "https://dev.accounts.dummy.com/realms/dummy/protocol/openid-connect/auth",
-  token_endpoint:
-    "https://dev.accounts.dummy.com/realms/dummy/protocol/openid-connect/token",
-  jwks_uri:
-    "https://dev.accounts.dummy.com/realms/dummy/protocol/openid-connect/certs",
-};
-
-const additionalOidcEndpoints: OidcConfigEndpoints = {
-  ...obligatoryOidcEndpoints,
-  introspection_endpoint:
-    "https://dev.accounts.dummy.com/realms/dummy/protocol/openid-connect/token/introspect",
-  userinfo_endpoint:
-    "https://dev.accounts.dummy.com/realms/dummy/protocol/openid-connect/userinfo",
-};
-
-const validRsaJkwsUriKey: RsaJkwsUriKey = {
-  kid: "0TNVl32y25mLkCoS-cX30727U5DQ1cXx8EkGs-G1TIQ",
-  kty: "RSA",
-  alg: "RS256",
-  use: "sig",
-  n: "lVCaCQR0iyM0IgBXMXTidBBtwF0GvBlgnHO7Mb8NIyyiKKPzRfwMtBYqIcUcX_p96hewJ0nE5auE-tZ0HZ34_KSpMkxNN1du3IN2Zhh-Hf0LuxAgXSyfo6xWYQ7KJtMVLecFnYggPA-zf7crWcIE-O_PbrNMMA9ci2eR5GyZlIostR_k63gOsp9Ejfavl0kDNAFLDfeazUW5Rdm0nf5qkuiJOdy26ZvT3gN_Ad5htjB2g7KBDCq72Apxt7c4VwK-icYtEy2nn_zuN1fUDCpXrt8QZ8oG9bL2BiSB2Oi5X1c5rvgOICxoin7HyW63f6OKeNCjoo2BdhylRsum1bqMw",
-  e: "AOAB",
-};
+import {
+  obligatoryOidcEndpoints,
+  additionalOidcEndpoints,
+  validRsaJkwsUriKey,
+} from "../testData";
 
 describe("Validator for issuer OIDC configuration endpoints", () => {
   it("returns true if all the obligatory endpoints are present.", () => {

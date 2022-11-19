@@ -1,6 +1,4 @@
 import axios from "axios";
-import NodeCache from "node-cache";
-import { BaseClient, Issuer, generators } from "openid-client";
 
 import { validateJkwsUriKey } from "../models/authModel";
 import type {
@@ -35,7 +33,7 @@ const receiveProviderEndpoints = async (): Promise<OidcConfigEndpoints> => {
     );
     if (status != 200) {
       throw new Error(
-        `openid-configuration endpoint returned status: ${status}`
+        `provider's discovery endpoint returned status: ${status}`
       );
     }
     return data;
@@ -63,7 +61,7 @@ const receiveJkwsUri = async (
     });
     if (status != 200) {
       throw new Error(
-        `openid-configuration endpoint returned status: ${status}`
+        `provider's jwks_uri endpoint returned status: ${status}`
       );
     }
     return data;

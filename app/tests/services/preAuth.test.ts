@@ -1,4 +1,12 @@
-import { beforeAll, beforeEach, describe, expect, it, jest } from "@jest/globals";
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  jest,
+} from "@jest/globals";
 import axios from "axios";
 // import sinon from "sinon";
 // import proxyquire from "proxyquire";
@@ -18,42 +26,9 @@ import {
 } from "../../src/services/preAuth";
 import { initAuthCache, getAuthCache } from "../../src/states/cache";
 
+import { testOidcEndpoints, testJwks } from "../testData";
+
 jest.mock("axios");
-
-const testOidcEndpoints: OidcConfigEndpoints = {
-  issuer: "https://dev.accounts.dummy.com/realms/dummy",
-  authorization_endpoint:
-    "https://dev.accounts.dummy.com/realms/dummy/protocol/openid-connect/auth",
-  token_endpoint:
-    "https://dev.accounts.dummy.com/realms/dummy/protocol/openid-connect/token",
-  jwks_uri:
-    "https://dev.accounts.dummy.com/realms/dummy/protocol/openid-connect/certs",
-  introspection_endpoint:
-    "https://dev.accounts.dummy.com/realms/dummy/protocol/openid-connect/token/introspect",
-  userinfo_endpoint:
-    "https://dev.accounts.dummy.com/realms/dummy/protocol/openid-connect/userinfo",
-};
-
-const testJwks: Record<"keys", Array<RsaJkwsUriKey | EcJkwsUriKey>> = {
-  keys: [
-    {
-      kid: "0TNVl32y36mLkCoS-cX30727D5UQ1cXx8EkGs-G1TIO",
-      kty: "RSA",
-      alg: "RS256",
-      use: "sig",
-      n: "lVCaCQR0iyM0IgBXMXTidBDoyQ7GvBlgnHO7Mb8NIyyiKKPzRfwMtBYqIcUcX_p96hewJ0nE5auE-tZ0HZ34_KSpNjxNN1du3IN2Zhh-Hf0LuxAgXSyfo6xWYQ7KJtMVLecFnYggPA-zf7crWcIE-O_PbrNMMA9ci2eR5GyZlNxQEwR_k63gOsp9Ejfavl0kDNAFLDfeazUW5Rdm0nf5qkuiJOdy26ZvT3gN_Da7htjB2g7KBDCq72Apxt7c4VwK-icYtEy2nn_zuN1fUDCpXrt8QZ8oG9bL2BiSB2Oi5X1c5rvgOICxoin7HyW63f6OKeNCjoo2BdhylRsum1bqMw",
-      e: "AOAB",
-    },
-    {
-      kid: "8BFiCfAxqRECIZR6mCJDkH-HluamiB0KU8Wa4AMj8uN",
-      kty: "RSA",
-      alg: "RSA-OAEP",
-      use: "enc",
-      n: "rvKFkPwbyIhOYPODsToMYIHYImq8Hr9yDHOIAV58BtFSsSmDX-5nxWLbd2fhXDTvTwJT5r0tTR-eVanRWDQJDlnuRICmKQcWAoyfYfkilcQ4mCuEQsqU-F-wHoNxYmv86luapk_zWSAhuxnX6QkdP0a9_GTpKiSFYQOrmx1n5-EYapBDQ0N-8ESJ-qSCIzGdcTo5DKVN83LuOn34HWRZTGJyoAgMLH4vwG9Jw5Nqyn6_DamsNr22wHBqz58C_Du-2nYnN1myUJjUquLu2j5QnZ2_9vBQ6vtzBbW2Z2CnRQa7zDDhTTqKMLqnOCGJVq7vAW-u0mlwlaT-qPYHFsTZCw",
-      e: "AOAB",
-    },
-  ],
-};
 
 describe("Pre-authenticator | Provider Endpoints", () => {
   // let stub: any;
@@ -74,12 +49,17 @@ describe("Pre-authenticator | Provider Endpoints", () => {
   //   });
   // });
 
-  beforeAll( () => {
+  beforeAll(() => {
     initAuthCache();
-  })
+  });
 
   beforeEach(() => {
     jest.clearAllMocks();
+    getAuthCache().flushAll();
+  });
+
+  afterAll(() => {
+    getAuthCache().flushAll();
   });
 
   it("firstly - reads providers oidc endpoints from api.", async () => {
@@ -105,6 +85,9 @@ describe("Pre-authenticator | Provider Endpoints", () => {
   });
 
   it("secondly - reads providers oidc endpoints from cache.", async () => {
+    if (!getAuthCache().has(CACHE_PROVIDER_ENDPOINTS)) {
+      getAuthCache().set(CACHE_PROVIDER_ENDPOINTS, testOidcEndpoints);
+    }
     const endpoints = await getProviderEndpoints();
     expect(axios.get).toHaveBeenCalledTimes(0); // There wasn't a new API call
     expect(endpoints).toEqual(testOidcEndpoints);

@@ -1,9 +1,19 @@
 /**
- * Available encription algorithms. Mind that `HS256` deliberately disabled.
+ * Available encription algorithms. Mind that symetric keys (e.g.`HS256`) are
+ * deliberately disabled.
  *
  * @see https://stackoverflow.com/questions/39239051/rs256-vs-hs256-whats-the-difference
+ * @todo add support for eliptic algorithms (e.g. `ES256`)
  */
-const jwkAlgTypes = ["RS256", "RSA-OAEP"] as const;
+const jwkAlgTypes = [
+  "PS256",
+  "PS384",
+  "PS512",
+  "RS256",
+  "RS384",
+  "RS512",
+  "RSA-OAEP",
+] as const;
 type JwkAlgType = typeof jwkAlgTypes[number];
 
 /**
@@ -31,7 +41,7 @@ export interface OidcConfigEndpoints {
   userinfo_endpoint?: string;
 }
 
-export interface OidcTokenCoreBody {
+export interface OidcTokenCorePayload {
   iss: string;
   sub: string;
   exp: number;

@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from "express";
 import { createLocalJWKSet, jwtVerify } from "jose";
 import type { JSONWebKeySet, JWTPayload } from "jose";
 
-import { OidcTokenCoreBody, InactiveOidcToken } from "../models/authModel";
+import { OidcTokenCorePayload, InactiveOidcToken } from "../models/authModel";
 import { getJwkKeys } from "./preAuth";
 import { AUTH_ENDPOINT, getOidcClient } from "../states/clients";
 import { getLoginCache } from "../states/cache";
@@ -71,14 +71,14 @@ export const handleCallback = async (
  */
 export const introspectToken = async (
   accessToken: string
-): Promise<OidcTokenCoreBody | InactiveOidcToken> => {
+): Promise<OidcTokenCorePayload | InactiveOidcToken> => {
   if (accessToken === "") {
     throw new Error("Field `accessToken` cannot be empty!");
   }
   const queryString = ``;
   try {
     const { data, status } = await axios.post<
-      OidcTokenCoreBody | InactiveOidcToken
+      OidcTokenCorePayload | InactiveOidcToken
     >(`/connectors?${queryString}`, {
       baseURL: process.env.OIDC_ISSUER_URL,
       headers: {
