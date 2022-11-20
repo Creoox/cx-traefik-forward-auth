@@ -83,7 +83,7 @@ run-unit-tests: import-or-setup-env-file
 		$(SERVICE_NAME) \
 		yarn test:unit
 	@echo "[INFO] Unit Tests on $(APP_NAME):$(VERSION) dev instance was successfully run!"
-#
+
 # Run unit tests on DEV instance with coverage report in HTML
 run-ut-coverage-html: import-or-setup-env-file
 	@docker-compose \
