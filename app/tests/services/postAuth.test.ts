@@ -7,11 +7,17 @@ import type {
 } from "./../../src/models/authModel";
 import { logger } from "../../src/services/logger";
 
+import { testTokenPayload } from "../testData";
+
 jest.mock("../../src/services/logger");
 
 describe("Post-Authenticator | Payload Validator", () => {
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  it("validates valid token", () => {
+    expect(() => validateTokenPayload(testTokenPayload)).not.toThrow(Error);
   });
 
   it("throws error for inactive token", () => {

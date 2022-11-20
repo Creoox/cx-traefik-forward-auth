@@ -14,7 +14,7 @@ export function validateTokenPayload<
   R extends InactiveOidcToken
 >(payload: Partial<T> | R): void {
   logger.debug(`token active: ${payload.active}`);
-  if (!payload.active) {
+  if (payload.active !== undefined && !payload.active) {
     throw new Error("Token is inactive.");
   }
 }
