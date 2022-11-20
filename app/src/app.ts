@@ -15,6 +15,7 @@ import { AUTH_ENDPOINT, initOidcClient, getOidcClient } from "./states/clients";
 import { initLoginCache, getLoginCache } from "./states/cache";
 import { logger } from "./services/logger";
 import { getStateParam, getRandomString, getEnvInfo } from "./services/helpers";
+import type { LoginSession, LoginCache } from "./models/loginModel";
 
 dotenv.config();
 const PROD_ENV = "production";
@@ -22,6 +23,7 @@ const isProdEnv = process.env.NODE_ENV === PROD_ENV;
 const PORT = process.env.APP_PORT || 4181;
 const VALIDATION_TYPE =
   process.env.OIDC_VERIFICATION_TYPE === "introspection" ? "intro" : "jwt";
+/* eslint-disable  @typescript-eslint/no-non-null-assertion */
 const LOGIN_WHEN_NO_TOKEN = ["true", "True", "1"].includes(
   process.env.LOGIN_WHEN_NO_TOKEN!
 );
@@ -37,7 +39,6 @@ if (LOGIN_WHEN_NO_TOKEN) {
       saveUninitialized: false,
       cookie: {
         secure: "auto",
-        // domain: process.env.HOST_URI,
         maxAge: 5 * 60 * 1000,
       },
     })
@@ -57,7 +58,7 @@ const isSessionEstablished = (
   res: Response,
   next: NextFunction
 ) => {
-  if (LOGIN_WHEN_NO_TOKEN && !!(req.session as any).access_token) {
+  if (LOGIN_WHEN_NO_TOKEN && !!(req.session as LoginSession).access_token) {
     next();
   } else {
     next("route");
@@ -81,7 +82,7 @@ app.get(
       )
     ) {
       res.status(400).render("token/index.ejs", {
-        access_token: (req.session as any).access_token,
+        access_token: (req.session as LoginSession).access_token,
       });
       return;
     }
@@ -103,7 +104,7 @@ app.get(
         AUTH_ENDPOINT
       );
 
-      const cache = getLoginCache().get(state) as any;
+      const cache = getLoginCache().get(state) as LoginCache;
       if (!cache) {
         return next("Code has expired. Please login once again.");
       }
@@ -226,12 +227,7 @@ app.get(
  * General error handling middleware. Mind that it should be used as the last
  * one.
  */
-const errorHandler = (
-  err: Error,
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const errorHandler = (err: Error, req: Request, res: Response) => {
   logger.error(err);
   isProdEnv ? res.status(500).send() : res.status(500).render("500/index.ejs");
 };

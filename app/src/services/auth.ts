@@ -4,12 +4,14 @@ import { createLocalJWKSet, jwtVerify } from "jose";
 import type { JSONWebKeySet, JWTPayload } from "jose";
 import qs from "qs";
 
-import type { ActiveOidcToken, InactiveOidcToken } from "../models/authModel";
 import { getJwkKeys, getProviderEndpoints } from "./preAuth";
 import { AUTH_ENDPOINT, getOidcClient } from "../states/clients";
 import { getLoginCache } from "../states/cache";
 import { logger } from "./logger";
+import type { ActiveOidcToken, InactiveOidcToken } from "../models/authModel";
+import type { LoginSession, LoginCache } from "../models/loginModel";
 
+/* eslint-disable  @typescript-eslint/no-non-null-assertion */
 const JWT_STRICT_AUDIENCE = ["true", "True", "1"].includes(
   process.env.JWT_STRICT_AUDIENCE!
 );
@@ -32,7 +34,7 @@ export const handleCallback = async (
       new Error("Missing 'state' parameter in authorization server response.")
     );
   }
-  const cache = getLoginCache().get(params.state!) as any;
+  const cache = getLoginCache().get(params.state!) as LoginCache;
   if (!cache) {
     return next("Code has expired. Please login once again.");
   }
@@ -48,7 +50,7 @@ export const handleCallback = async (
     if (err) {
       next(err);
     }
-    (req.session as any).access_token = tokenSet.access_token;
+    (req.session as LoginSession).access_token = tokenSet.access_token;
     req.session.save((err) => {
       if (err) {
         return next(err);
@@ -78,7 +80,7 @@ export const verifyTokenViaJwt = async (token: string): Promise<JWTPayload> => {
   }
   const JWKS = createLocalJWKSet((await getJwkKeys()) as JSONWebKeySet);
 
-  const { payload, protectedHeader } = await jwtVerify(token, JWKS, {
+  const { payload } = await jwtVerify(token, JWKS, {
     issuer: process.env.OIDC_ISSUER_URL,
     audience: JWT_STRICT_AUDIENCE ? process.env.OIDC_CLIENT_ID : undefined,
   });

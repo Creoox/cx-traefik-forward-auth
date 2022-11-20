@@ -8,13 +8,15 @@ let oidcClient: BaseClient;
 export const initOidcClient = async (): Promise<void> => {
   const issuer = await Issuer.discover(process.env.OIDC_ISSUER_URL as string);
   oidcClient = new issuer.Client({
-    client_id: process.env.OIDC_CLIENT_ID!,
+    client_id: process.env.OIDC_CLIENT_ID as string,
     client_secret: process.env.OIDC_CLIENT_SECRET
       ? process.env.OIDC_CLIENT_SECRET
       : undefined,
     redirect_uris: [`${process.env.HOST_URI}/_oauth`],
     response_types: ["code"],
-    token_endpoint_auth_method: "none",
+    token_endpoint_auth_method: process.env.OIDC_CLIENT_SECRET
+      ? "client_secret_post"
+      : "none",
   });
 };
 

@@ -81,6 +81,7 @@ export interface DotenvFile
 export function validateDotenvFile(): void {
   const obligVars = dotenvVars_obligatory;
   for (const variable in obligVars) {
+    /* eslint-disable  @typescript-eslint/no-explicit-any */
     if (!process.env[obligVars[variable]]) {
       throw new Error(`Missing or invalid variable: ${obligVars[variable]}`);
     } else if (

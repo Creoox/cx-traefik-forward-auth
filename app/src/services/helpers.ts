@@ -28,7 +28,7 @@ export const getEnvInfo = (
   port: string | number,
   loginWhenNoToken: boolean,
   isProd: boolean
-): any => ({
+) => ({
   service: process.env.APP_NAME || "cx-traefik-forward-auth",
   serviceVersion: process.env.APP_VERSION || "1.0.0",
   servicePort: port,
