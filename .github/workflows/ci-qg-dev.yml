@@ -4,7 +4,7 @@
 name: Quality Gate -> Unit Tests on Development Environment
 on:
   push:
-    branches: [ develop, main ]
+    branches: [ develop ]
   pull_request:
     branches: [ develop, main ]
 
@@ -40,5 +40,7 @@ jobs:
     steps:
       - name: Check-out last commit
         uses: actions/checkout@v2
+      - name: Use example .env file
+        run: copy ./app/.env.example ./app/.env
       - name: Build PROD instance (image)
         run: make build-prod-env

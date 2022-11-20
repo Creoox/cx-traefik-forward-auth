@@ -16,6 +16,6 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro            # Comment if using Windows
       # - ./app:/app                                # Uncomment for hot-reload, development only
-      # - ./app/logs/error.log:/app/logs/error.log  # Uncomment for hot-reload, production
+      # - ./app/logs/error.log:/app/logs/error.log  # Uncomment for logs binding, production
     ports:
       - 4181:${APP_PORT}
