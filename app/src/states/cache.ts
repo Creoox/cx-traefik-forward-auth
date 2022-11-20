@@ -1,7 +1,7 @@
 import NodeCache from "node-cache";
 
-var loginCache: NodeCache;
-var authCache: NodeCache;
+let loginCache: NodeCache;
+let authCache: NodeCache;
 
 /**
  * Initialize Login Cache.
