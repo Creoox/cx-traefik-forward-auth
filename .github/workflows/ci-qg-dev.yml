@@ -41,6 +41,6 @@ jobs:
       - name: Check-out last commit
         uses: actions/checkout@v2
       - name: Use example .env file
-        run: copy ./app/.env.example ./app/.env
+        run: cp ./app/.env.example ./app/.env
       - name: Build PROD instance (image)
         run: make build-prod-env
