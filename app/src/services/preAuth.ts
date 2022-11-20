@@ -6,11 +6,11 @@ import type {
   RsaJkwsUriKey,
   EcJkwsUriKey,
 } from "../models/authModel";
-import {initAuthCache, getAuthCache} from "../states/cache"
+import { initAuthCache, getAuthCache } from "../states/cache";
 import { logger } from "./logger";
 
 // Authentication Cache
-initAuthCache()
+initAuthCache();
 export const CACHE_PROVIDER_ENDPOINTS = "providerEndpoints";
 export const CACHE_PROVIDER_JWKS = "providerJwks";
 
@@ -135,7 +135,7 @@ export const getJwkKeys = async (): Promise<
 
 /**
  * Check if verification via introspection is possible.
- * 
+ *
  * @throws Error if provider does not expose introspection_endpoint
  */
 export const checkIfIntrospectionPossible = async (): Promise<void> => {

@@ -11,7 +11,7 @@
     "test:unit": "jest",
     "test:coverage": "jest --coverage",
     "lint": "eslint .",
-    "lint:fix": "eslint --fix",
+    "lint:fix": "eslint --fix .",
     "start": "node dist/app.js",
     "start:dev": "ts-node-dev --respawn ./src/app.ts",
     "start:demo": "ts-node --transpile-only ./src/app.ts"

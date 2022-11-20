@@ -59,7 +59,7 @@ import-env-file: check-env-file
 ####                            Development Environment                             ####
 ########################################################################################
 .PHONY: build-dev-env run-dev-env down-dev-env
-.PHONY: run-unit-tests run-ut-coverage-html
+.PHONY: run-unit-tests run-ut-coverage-html run-lint-check
 
 # Build DEV service(s) instance(s) on your machine
 build-dev-env: import-or-setup-env-file
@@ -92,6 +92,15 @@ run-ut-coverage-html: import-or-setup-env-file
 		$(SERVICE_NAME) \
 		yarn test:coverage
 	@echo "[INFO] Unit Tests on $(APP_NAME):$(VERSION) dev instance was successfully run! Preview report in ./app/coverage/index.html"
+
+# Run lint check on DEV instance
+run-lint-check: import-or-setup-env-file
+	@docker-compose \
+		--file $(DOCKER_COMPOSE_DEV) run \
+		--rm \
+		$(SERVICE_NAME) \
+		yarn lint
+	@echo "[INFO] Lint Check on $(APP_NAME):$(VERSION) dev instance was successfully run!"
 
 # Stop and clear DEV service(s) instance(s)
 down-dev-env: import-or-setup-env-file

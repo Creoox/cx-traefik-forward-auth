@@ -21,20 +21,19 @@ jobs:
       - name: Run unit tests
         run: make run-unit-tests
 
-  # lint-check:
-  #   runs-on: ubuntu-latest
-  #   name: Run lint check
-  #   steps:
-  #     - name: Check-out last commit
-  #       uses: actions/checkout@v2
-  #     - name: Build docker DEV image
-  #       run: make build-dev-env
-  #     - name: Run lint check
-  #       run: make run-lint-check
+  lint-check:
+    runs-on: ubuntu-latest
+    name: Run lint check
+    steps:
+      - name: Check-out last commit
+        uses: actions/checkout@v2
+      - name: Build docker DEV image
+        run: make build-dev-env
+      - name: Run lint check
+        run: make run-lint-check
 
   docker-build-prod:
-    # needs: [unit-tests, lint-check]
-    needs: [unit-tests]
+    needs: [unit-tests, lint-check]
     runs-on: ubuntu-latest
     name: Build Docker Production Image (Test)
     steps:

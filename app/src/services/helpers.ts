@@ -1,6 +1,6 @@
 /**
  * Generates (pseudo) random string.
- * 
+ *
  * @param length of the generated random string
  * @returns random string
  */
@@ -42,7 +42,7 @@ export const getEnvInfo = (
 
 /**
  * Get the 'state' parameter form url/
- * 
+ *
  * @param url all url to get the parameter from
  * @param authEndpoint url part before '?' sign
  * @returns state parameter

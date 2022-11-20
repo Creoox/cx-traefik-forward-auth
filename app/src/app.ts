@@ -258,7 +258,7 @@ try {
   }
   if (VALIDATION_TYPE === "intro") {
     checkIfIntrospectionPossible()
-      .then(() => {})
+      .then()
       .catch((err) => {
         logger.error(err);
         process.exit(1);
