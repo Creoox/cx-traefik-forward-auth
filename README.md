@@ -25,7 +25,7 @@ APP_PORT=4181
 
 ## Environment settings
 HOST_URI=http://localhost
-ENVIRONMENT=development<development | production>
+ENVIRONMENT=<development | production>
 
 ## OIDC Provider settings
 OIDC_ISSUER_URL=https://dev.accounts.creoox.com/realms/creoox
