@@ -5,7 +5,8 @@ export interface LoginSession extends Partial<session.SessionData> {
 }
 
 export interface LoginCache extends Partial<session.SessionData> {
-  code_verifier: string;
+  code_verifier?: string;
+  nonce?: string;
   forwardedSchema: string;
   forwardedHost: string;
   forwardedUri: string;

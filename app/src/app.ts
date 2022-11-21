@@ -1,40 +1,38 @@
 import * as dotenv from "dotenv";
 import express, { Application, Request, Response, NextFunction } from "express";
 import session from "express-session";
-import { generators } from "openid-client";
 
-import { validateDotenvFile } from "./models/dotenvModel";
+import {
+  VERIF_TYPE,
+  LOGIN_WHEN_NO_TOKEN,
+  LOGIN_COOKIE_NAME,
+  validateDotenvFile,
+} from "./models/dotenvModel";
 import { checkIfIntrospectionPossible } from "./services/preAuth";
 import {
+  genAuthorizationUrl,
   handleCallback,
   verifyTokenViaJwt,
   verifyTokenViaIntrospection,
 } from "./services/auth";
 import { validateTokenPayload } from "./services/postAuth";
-import { AUTH_ENDPOINT, initOidcClient, getOidcClient } from "./states/clients";
+import { AUTH_ENDPOINT, initOidcClient } from "./states/clients";
 import { initLoginCache, getLoginCache } from "./states/cache";
 import { logger } from "./services/logger";
-import { getStateParam, getRandomString, getEnvInfo } from "./services/helpers";
+import { getStateParam, getEnvInfo } from "./services/helpers";
 import type { LoginSession, LoginCache } from "./models/loginModel";
 
 dotenv.config();
 const PROD_ENV = "production";
 const isProdEnv = process.env.NODE_ENV === PROD_ENV;
 const PORT = process.env.APP_PORT || 4181;
-const VALIDATION_TYPE =
-  process.env.OIDC_VERIFICATION_TYPE === "introspection" ? "intro" : "jwt";
-/* eslint-disable  @typescript-eslint/no-non-null-assertion */
-const LOGIN_WHEN_NO_TOKEN = ["true", "True", "1"].includes(
-  process.env.LOGIN_WHEN_NO_TOKEN!
-);
-const COOKIE_NAME = process.env.COOKIE_NAME || "cx_forward_auth";
 
 const app: Application = express();
 if (LOGIN_WHEN_NO_TOKEN) {
   app.use(
     session({
-      secret: process.env.SESSION_SECRET || "cyHkxMY0tWDNrxnutdfaNngk",
-      name: COOKIE_NAME,
+      secret: process.env.LOGIN_SESSION_SECRET || "cyHkxMY0tWDNrxnutdfaNngk",
+      name: LOGIN_COOKIE_NAME,
       resave: false,
       saveUninitialized: false,
       cookie: {
@@ -151,7 +149,7 @@ app.get(
       try {
         const token = authHeader[1];
         const payload =
-          VALIDATION_TYPE === "intro"
+          VERIF_TYPE === "intro"
             ? await verifyTokenViaIntrospection(token)
             : await verifyTokenViaJwt(token);
         validateTokenPayload(payload);
@@ -180,28 +178,7 @@ app.get(
           "Your're using cookie authorization for insecure connection!"
         );
       }
-      const code_verifier = generators.codeVerifier();
-      const code_challenge = generators.codeChallenge(code_verifier);
-      const random_state = getRandomString(24);
-      getLoginCache().has(random_state)
-        ? getLoginCache().del(random_state)
-        : null;
-      getLoginCache().set(random_state, {
-        code_verifier,
-        forwardedSchema: req.headers["x-forwarded-proto"],
-        forwardedHost: req.headers["x-forwarded-host"],
-        forwardedUri: req.headers["x-forwarded-uri"],
-      });
-
-      const authorizationUrl = getOidcClient().authorizationUrl({
-        scope: "openid email profile",
-        // resource: 'https://my.api.example.com/resource/32178',
-        code_challenge,
-        code_challenge_method: "S256",
-        state: random_state,
-      });
-
-      res.redirect(authorizationUrl);
+      res.redirect(genAuthorizationUrl(req.headers));
       return;
     } else {
       isProdEnv
@@ -252,7 +229,7 @@ try {
       });
     initLoginCache();
   }
-  if (VALIDATION_TYPE === "intro") {
+  if (VERIF_TYPE === "intro") {
     checkIfIntrospectionPossible()
       .then()
       .catch((err) => {

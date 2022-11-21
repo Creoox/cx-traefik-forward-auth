@@ -1,3 +1,14 @@
+export const VERIF_TYPE =
+  process.env.OIDC_VERIFICATION_TYPE === "introspection" ? "intro" : "jwt";
+/* eslint-disable  @typescript-eslint/no-non-null-assertion */
+export const LOGIN_WHEN_NO_TOKEN = ["true", "True", "1"].includes(
+  process.env.LOGIN_WHEN_NO_TOKEN!
+);
+export const LOGIN_AUTH_FLOW = process.env.LOGIN_AUTH_FLOW || "code";
+export const LOGIN_COOKIE_NAME =
+  process.env.LOGIN_COOKIE_NAME || "cx_forward_auth";
+export const LOGIN_SCOPE = process.env.LOGIN_SCOPE || "openid email profile";
+
 const boolTypes = [
   true,
   "true",
@@ -21,8 +32,10 @@ const dotenvVars_optionalStr = [
   "APP_NAME",
   "APP_VERSION",
   "OIDC_CLIENT_SECRET",
-  "COOKIE_NAME",
-  "SESSION_SECRET",
+  "LOGIN_AUTH_FLOW",
+  "LOGIN_SCOPE",
+  "LOGIN_COOKIE_NAME",
+  "LOGIN_SESSION_SECRET",
   "AUTH_ENDPOINT",
 ] as const;
 const dotenvVars_optionalNum = ["APP_PORT"] as const;
