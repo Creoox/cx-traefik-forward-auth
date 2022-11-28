@@ -29,7 +29,10 @@ const JWT_STRICT_AUDIENCE = ["true", "True", "1"].includes(
  * @returns authorization url
  * @todo add Hybrid Flow
  */
-export const genAuthorizationUrl = (headers: IncomingHttpHeaders) => {
+export const genAuthorizationUrl = (
+  headers: IncomingHttpHeaders,
+  loginAuthFlow: string = LOGIN_AUTH_FLOW
+): string => {
   let authorizationUrl: string;
   const random_state = getRandomString(24);
 
@@ -40,7 +43,7 @@ export const genAuthorizationUrl = (headers: IncomingHttpHeaders) => {
     forwardedUri: headers["x-forwarded-uri"] as string,
   };
 
-  if (LOGIN_AUTH_FLOW === "id_token") {
+  if (loginAuthFlow === "id_token") {
     const nonce = generators.nonce();
     getLoginCache().set(random_state, {
       nonce,

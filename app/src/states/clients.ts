@@ -26,7 +26,7 @@ export const initOidcClient = async (): Promise<void> => {
         ? process.env.OIDC_CLIENT_SECRET
         : undefined,
       redirect_uris: [`${process.env.HOST_URI}/_oauth`],
-      response_types: ["code"],
+      response_types: [LOGIN_AUTH_FLOW],
       token_endpoint_auth_method: process.env.OIDC_CLIENT_SECRET
         ? "client_secret_post"
         : "none",

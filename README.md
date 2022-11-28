@@ -1,8 +1,39 @@
 # Creoox Traefik Forward-Auth
 
-cx-traefik-forward-auth is a standalone authorization middleware for [traefik](https://traefik.io/traefik/) that provides OIDC authentication and/or opaque token validation for the traefik reverse proxy.
+Inspired by [traefik-forward-auth](https://github.com/thomseddon/traefik-forward-auth) by [thomseddon](https://github.com/thomseddon) (MIT License).
 
-TODO: Elaborate description
+_cx-traefik-forward-auth_ is a standalone authorization middleware for [Traefik](https://traefik.io/traefik/) that provides OIDC authentication and/or opaque token validation (introspection) for the traefik reverse proxy. It's main goal is to work as authentication feature in API Gateway solution that Traefik provides. At the current state of implementation, the authentication is based on reading the **Authorization** header from the request and verifying it.
+
+"Authorization": "Bearer \<access-token\>"
+
+There are two types of verification possible:
+
+- [Introspection](https://www.oauth.com/oauth2-servers/token-introspection-endpoint/)
+- [Verifying the signature](https://developer.okta.com/docs/guides/validate-id-tokens/main/) (default)
+
+In both cases the _introspection endpoint_ or _provider signature keys_ that are needed to verify the token are read from its [discovery endpoint](https://swagger.io/docs/specification/authentication/openid-connect-discovery/) from **OIDC_ISSUER_URL** variable. Please mind two aspects:
+
+1. _introspection_ is only possible if the client secret was provided.
+2. Currently decoding of symetrical (e.g. HS256) or eliptical (e.g. ES256 - TODO) keys is not supported.
+
+In addition to that, it is possible to use this service to obtain the token (so it acts as OIDC Client). In order to that the **LOGIN_WHEN_NO_TOKEN** should be set to **true**.
+
+<u>WARNING! This feature is NOT meant to be used on production.</u>
+
+At the current state of implementation, two authentication flows are possible:
+
+- [Implicit Flow](https://auth0.com/docs/authenticate/login/oidc-conformant-authentication/oidc-adoption-implicit-flow)
+- [Authorization Code Flow](https://auth0.com/docs/authenticate/login/oidc-conformant-authentication/oidc-adoption-auth-code-flow) (default)
+
+Currently tested providers:
+
+| Provideer                                              | Version | Result | Comment       |
+| ------------------------------------------------------ | ------- | ------ | ------------- |
+| [Keycloak](https://www.keycloak.org/)                  | 17.1    | ✅     |               |
+| [SAP Commerce](https://help.sap.com/docs/SAP_COMMERCE) | ?       | ⏳     | Running tests |
+| Google                                                 | ?       | ➡️     | Planned       |
+
+<br/>
 
 # Project usage
 
@@ -10,40 +41,37 @@ TODO: Elaborate description
 
 1. Prepared traefik-based infrastructure
 
-## Examples
+## Variables
 
 <br/>
 
 <details>
 <summary>Environmental variables:</summary>
 
-```t
-## Application settings
-APP_NAME=cx-traefik-forward-auth
-APP_VERSION=1.0.0
-APP_PORT=4181
-
-## Environment settings
-HOST_URI=http://localhost
-ENVIRONMENT=<development | production>
-
-## OIDC Provider settings
-OIDC_ISSUER_URL=https://dev.accounts.creoox.com/realms/creoox
-OIDC_CLIENT_ID=<client-id>
-OIDC_CLIENT_SECRET=<client-secret>
-OIDC_VERIFICATION_TYPE=<jwt | introspection>
-
-## Middelware behaviour settings
-JWT_STRICT_AUDIENCE=false
-AUTH_ENDPOINT=/_oauth
-LOGIN_WHEN_NO_TOKEN=true
-LOGIN_AUTH_FLOW=code
-LOGIN_SCOPE=openid email profile
-LOGIN_COOKIE_NAME=cx_forward_auth
-LOGIN_SESSION_SECRET=<random-value>
-```
+| Variable Name          | Type    | Obligatory | Comment                                                      |
+| ---------------------- | ------- | ---------- | ------------------------------------------------------------ |
+| APP_NAME               | string  | No         | Displayed service (app) name                                 |
+| APP_VERSION            | string  | No         | Displayed service (app) version                              |
+| APP_PORT               | int     | No         | Service running port                                         |
+| HOST_URI               | string  | Yes        | URI of the host the service is running on                    |
+| ENVIRONMENT            | string  | Yes        | 'development' or 'production'                                |
+| OIDC_ISSUER_URL        | string  | Yes        | Main Issuer's URL - all data are retrieved from there        |
+| OIDC_CLIENT_ID         | string  | Yes        | OIDC client id                                               |
+| OIDC_CLIENT_SECRET     | string  | No         | OIDC client secret (if set)                                  |
+| OIDC_VERIFICATION_TYPE | string  | Yes        | 'jwt' - decoding or 'introspection' - asking AS              |
+| JWT_STRICT_AUDIENCE    | boolean | Yes        | true if token should be used for strict audinence only       |
+| AUTH_ENDPOINT          | string  | No         | Service redirection endpoint, '/\_oauth' by default          |
+| LOGIN_WHEN_NO_TOKEN    | boolean | Yes        | true if login functionality should be on (**dev only!**)     |
+| LOGIN_AUTH_FLOW        | string  | No         | 'code' (default) or 'id_token' (implicit flow)               |
+| LOGIN_SCOPE            | string  | No         | Requested scope(s), defaults to "openid email profile"       |
+| LOGIN_COOKIE_NAME      | string  | No         | Name of the browser cookie, only if LOGIN_WHEN_NO_TOKEN=true |
+| LOGIN_SESSION_SECRET   | string  | No         | Randomized secret for cookie-session                         |
 
 </details>
+
+<br/>
+
+## Examples
 
 <br/>
 
@@ -74,7 +102,7 @@ traefik:
       - "traefik.enable=true"
       - "traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https"
       # - "traefik.http.middlewares.traefik-auth.basicauth.users=dummy:$$apr1$$iHNcpXTy$$cSNZ9EJt3fChWLn3s.v2L1"
-      
+
       - "traefik.http.routers.traefik.entrypoints=web"
       - "traefik.http.routers.traefik.rule=Host(`localhost`)"
       - "traefik.http.routers.traefik.middlewares=traefik-https-redirect"
@@ -100,7 +128,6 @@ traefik:
         - cx-example-net
 
   traefik-forward-auth:
-    # image: thomseddon/traefik-forward-auth:2
     image: creoox/cx-traefik-forward-auth:1.0.0
     container_name: cx-example-traefik-forward-auth
     env_file:

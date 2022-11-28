@@ -40,6 +40,6 @@ jobs:
       - name: Check-out last commit
         uses: actions/checkout@v2
       - name: Use example .env file
-        run: cp ./app/.env.example ./app/.env
+        run: cat .app/.env.example | sed 's/ENVIRONMENT=development/ENVIRONMENT=production/' > .app/.env
       - name: Build PROD instance (image)
         run: make build-prod-env

@@ -16,6 +16,7 @@ export function validateTokenPayload<
   if (payload.active !== undefined && !payload.active) {
     throw new Error("Token is inactive.");
   }
+  /* istanbul ignore next */
   logger.debug(
     payload.active !== undefined && payload.active
       ? "token active"
