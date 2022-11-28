@@ -1,8 +1,8 @@
 ### macOS ###
 # General
-.DS_Store
-.AppleDouble
-.LSOverride
+**/.DS_Store
+**/.AppleDouble
+**/.LSOverride
 
 # Ignore .git and .cache folders
 .git
@@ -35,3 +35,6 @@
 *.md
 !README*.md
 README-secret.md
+
+# Project specfic
+app/coverage

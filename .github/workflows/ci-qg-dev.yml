@@ -1,0 +1,45 @@
+# Basic CI task for development and production. It assures that code is kept 
+# unit-tested. Test coverage is not checked.
+
+name: Quality Gate -> Unit Tests on Development Environment
+on:
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop, main ]
+
+jobs:
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    name: Run unit tests
+    steps:
+      - name: Check-out last commit
+        uses: actions/checkout@v2
+      - name: Build docker DEV image
+        run: make build-dev-env
+      - name: Run unit tests
+        run: make run-unit-tests
+
+  lint-check:
+    runs-on: ubuntu-latest
+    name: Run lint check
+    steps:
+      - name: Check-out last commit
+        uses: actions/checkout@v2
+      - name: Build docker DEV image
+        run: make build-dev-env
+      - name: Run lint check
+        run: make run-lint-check
+
+  docker-build-prod:
+    needs: [unit-tests, lint-check]
+    runs-on: ubuntu-latest
+    name: Build Docker Production Image (Test)
+    steps:
+      - name: Check-out last commit
+        uses: actions/checkout@v2
+      - name: Use example .env file
+        run: cat ./app/.env.example | sed 's/ENVIRONMENT=development/ENVIRONMENT=production/' > ./app/.env
+      - name: Build PROD instance (image)
+        run: make build-prod-env

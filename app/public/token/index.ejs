@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Access Token</title>
+
+    <style type="text/css">
+      @import url("https://fonts.googleapis.com/css?family=Lato");
+      * {
+        position: relative;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Lato", sans-serif;
+      }
+
+      body {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        /* background: linear-gradient(to bottom right, #EEE, #AAA); */
+        background: linear-gradient(
+          to bottom right,
+          rgb(200, 200, 200),
+          rgb(100, 100, 100)
+        );
+      }
+
+      h1 {
+        margin: 40px 0 20px;
+      }
+
+      .container {
+        width: 70vw;
+        height: auto;
+        margin-right: auto;
+        margin-left: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container" style="text-align: center">
+      <h1><b>Acess Token</b></h1>
+      <p><%= access_token %></p>
+    </div>
+  </body>
+</html>

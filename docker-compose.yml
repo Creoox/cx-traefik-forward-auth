@@ -14,12 +14,8 @@ services:
     env_file:
       - ./app/.env
     volumes:
-     - cx-traefik-forward-auth-vol:/app/node_modules
-    #  - ./app:/app  # Uncomment for hot-reload
+      - /etc/localtime:/etc/localtime:ro            # Comment if using Windows
+      # - ./app:/app                                # Uncomment for hot-reload, development only
+      # - ./app/logs/error.log:/app/logs/error.log  # Uncomment for logs binding, production
     ports:
       - 4181:${APP_PORT}
-    command: >
-      sh -c "yarn start:dev"
-
-volumes:
-  cx-traefik-forward-auth-vol:
