@@ -69,8 +69,6 @@ Currently tested providers:
 
 </details>
 
-<br/>
-
 ## Examples
 
 <br/>
