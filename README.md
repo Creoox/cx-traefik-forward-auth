@@ -6,6 +6,8 @@ _cx-traefik-forward-auth_ is a standalone authorization middleware for [Traefik]
 
 "Authorization": "Bearer \<access-token\>"
 
+<img src="./auth-basic.gif" alt="Basic Authentication" height="300">
+
 There are two types of verification possible:
 
 - [Introspection](https://www.oauth.com/oauth2-servers/token-introspection-endpoint/)
@@ -19,6 +21,8 @@ In both cases the _introspection endpoint_ or _provider signature keys_ that are
 In addition to that, it is possible to use this service to obtain the token (so it acts as OIDC Client). In order to that the **LOGIN_WHEN_NO_TOKEN** should be set to **true**.
 
 <u>WARNING! This feature is NOT meant to be used on production.</u>
+
+<img src="./auth-login.gif" alt="Login Authentication" height="300">
 
 At the current state of implementation, two authentication flows are possible:
 
