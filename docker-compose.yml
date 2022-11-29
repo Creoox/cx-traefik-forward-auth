@@ -8,7 +8,7 @@ services:
       dockerfile: ./.docker/${ENVIRONMENT}.Dockerfile
       args:
         - node_env_type=${ENVIRONMENT}
-    # platform: linux/amd64
+    platform: linux/amd64
     image: creoox/cx-traefik-forward-auth:${APP_VERSION}
     container_name: ${APP_NAME}-${APP_VERSION}
     env_file:
