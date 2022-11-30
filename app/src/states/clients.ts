@@ -16,7 +16,7 @@ export const initOidcClient = async (): Promise<void> => {
   if (LOGIN_AUTH_FLOW === "id_token") {
     oidcClient = new issuer.Client({
       client_id: process.env.OIDC_CLIENT_ID as string,
-      redirect_uris: [`${process.env.HOST_URI}/_oauth`],
+      redirect_uris: [`${process.env.HOST_URI}${AUTH_ENDPOINT}`],
       response_types: [LOGIN_AUTH_FLOW],
     });
   } else {
@@ -25,7 +25,7 @@ export const initOidcClient = async (): Promise<void> => {
       client_secret: process.env.OIDC_CLIENT_SECRET
         ? process.env.OIDC_CLIENT_SECRET
         : undefined,
-      redirect_uris: [`${process.env.HOST_URI}/_oauth`],
+      redirect_uris: [`${process.env.HOST_URI}${AUTH_ENDPOINT}`],
       response_types: [LOGIN_AUTH_FLOW],
       token_endpoint_auth_method: process.env.OIDC_CLIENT_SECRET
         ? "client_secret_post"
