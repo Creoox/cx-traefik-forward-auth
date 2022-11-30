@@ -25,7 +25,8 @@ const JWT_STRICT_AUDIENCE = ["true", "True", "1"].includes(
  * - Authorization Code Flow (default)
  * - Implicit Flow
  *
- * @param headers containing information with original request.
+ * @param headers containing information with original request
+ * @param [loginAuthFlow=LOGIN_AUTH_FLOW] optional parameter to set auth flow
  * @returns authorization url
  * @todo add Hybrid Flow
  */
@@ -53,7 +54,6 @@ export const genAuthorizationUrl = (
     authorizationUrl = getOidcClient().authorizationUrl({
       scope: LOGIN_SCOPE,
       nonce: nonce,
-      response_mode: "form_post",
       state: random_state,
     });
   } else {
