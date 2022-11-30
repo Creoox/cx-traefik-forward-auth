@@ -31,11 +31,12 @@ At the current state of implementation, two authentication flows are possible:
 
 Currently tested providers:
 
-| Provideer                                              | Version | Result | Comment       |
+| Provider                                               | Version | Result | Comment       |
 | ------------------------------------------------------ | ------- | ------ | ------------- |
 | [Keycloak](https://www.keycloak.org/)                  | 17.1    | ✅     |               |
 | [SAP Commerce](https://help.sap.com/docs/SAP_COMMERCE) | ?       | ⏳     | Running tests |
 | Google                                                 | ?       | ➡️     | Planned       |
+| GitHub                                                 | ?       | ➡️     | Planned       |
 
 <br/>
 
@@ -44,6 +45,7 @@ Currently tested providers:
 ## Prerequisites
 
 1. Prepared traefik-based infrastructure
+2. [OPTIONAL] [ModHeader](https://modheader.com/) to include authorization header in browser request
 
 ## Variables
 
@@ -103,7 +105,6 @@ traefik:
     labels:
       - "traefik.enable=true"
       - "traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https"
-      # - "traefik.http.middlewares.traefik-auth.basicauth.users=dummy:$$apr1$$iHNcpXTy$$cSNZ9EJt3fChWLn3s.v2L1"
 
       - "traefik.http.routers.traefik.entrypoints=web"
       - "traefik.http.routers.traefik.rule=Host(`localhost`)"
@@ -114,7 +115,6 @@ traefik:
       - "traefik.http.routers.traefik-secure.tls=true"
       - "traefik.http.routers.traefik-secure.tls.certresolver=hypercpq"
       - "traefik.http.routers.traefik-secure.service=api@internal"
-      # - "traefik.http.routers.traefik-secure.middlewares=traefik-auth"
       - "traefik.http.routers.traefik-secure.middlewares=traefik-forward-auth"
 
   # https://doc.traefik.io/traefik/providers/docker/#docker-api-access
@@ -130,7 +130,7 @@ traefik:
         - cx-example-net
 
   traefik-forward-auth:
-    image: creoox/cx-traefik-forward-auth:1.0.0
+    image: creoox/cx-traefik-forward-auth:1.0.1
     container_name: cx-example-traefik-forward-auth
     env_file:
       - ./cx-traefik-forward-auth.env
