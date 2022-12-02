@@ -83,7 +83,7 @@ describe("Authenticator | URL generator", () => {
     const issuerStub = await Issuer.discover(
       process.env.OIDC_ISSUER_URL as string
     );
-    const clientStub = getOidcClientStub(issuerStub, ["token id_token"]);
+    const clientStub = getOidcClientStub(issuerStub, ["id_token token"]);
     (getOidcClient as jest.Mock).mockImplementation(() => clientStub);
 
     const startCacheKeyNo = getLoginCache().keys().length;

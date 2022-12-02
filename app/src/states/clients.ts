@@ -17,7 +17,7 @@ export const initOidcClient = async (): Promise<void> => {
     oidcClient = new issuer.Client({
       client_id: process.env.OIDC_CLIENT_ID as string,
       redirect_uris: [`${process.env.HOST_URI}${AUTH_ENDPOINT}`],
-      response_types: ["token id_token"],
+      response_types: ["id_token token"],
     });
   } else {
     oidcClient = new issuer.Client({

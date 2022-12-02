@@ -10,7 +10,7 @@ export const LOGIN_COOKIE_NAME =
   process.env.LOGIN_COOKIE_NAME || "cx_forward_auth";
 export const LOGIN_SCOPE = process.env.LOGIN_SCOPE || "openid email profile";
 export const LOGIN_AUTH_FLOW = ((): "implicit" | "code" => {
-  if (process.env.LOGIN_AUTH_FLOW === "token id_token") {
+  if (process.env.LOGIN_AUTH_FLOW === "id_token token") {
     return "implicit";
   } else if (process.env.LOGIN_AUTH_FLOW === "code") {
     return "code";

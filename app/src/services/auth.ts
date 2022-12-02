@@ -71,6 +71,7 @@ export const genAuthorizationUrl = (
       state: random_state,
     });
   }
+  logger.debug(`authorizationUrl: ${authorizationUrl}`);
   return authorizationUrl;
 };
 
