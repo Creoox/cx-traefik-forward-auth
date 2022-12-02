@@ -24,7 +24,7 @@ In addition to that, it is possible to use this service to obtain the token (so 
 
 <img src="./auth-login.gif" alt="Login Authentication" height="300">
 
-At the current state of implementation, two authentication flows are possible:
+At the current state of implementation, two authentication flows are possible (both [OIDC-conformant](https://auth0.com/docs/authenticate/login/oidc-conformant-authentication)):
 
 - [Implicit Flow](https://auth0.com/docs/authenticate/login/oidc-conformant-authentication/oidc-adoption-implicit-flow)
 - [Authorization Code Flow](https://auth0.com/docs/authenticate/login/oidc-conformant-authentication/oidc-adoption-auth-code-flow) (default)
@@ -68,7 +68,7 @@ Currently tested providers:
 | JWT_STRICT_AUDIENCE    | boolean | Yes        | true if token should be used for strict audinence only       |
 | AUTH_ENDPOINT          | string  | No         | Service redirection endpoint, '/\_oauth' by default          |
 | LOGIN_WHEN_NO_TOKEN    | boolean | Yes        | true if login functionality should be on (**dev only!**)     |
-| LOGIN_AUTH_FLOW        | string  | No         | 'code' (default) or 'id_token' (implicit flow)               |
+| LOGIN_AUTH_FLOW        | string  | No         | 'code' (default) or 'token id_token' (implicit flow)         |
 | LOGIN_SCOPE            | string  | No         | Requested scope(s), defaults to "openid email profile"       |
 | LOGIN_COOKIE_NAME      | string  | No         | Name of the browser cookie, only if LOGIN_WHEN_NO_TOKEN=true |
 | LOGIN_SESSION_SECRET   | string  | No         | Randomized secret for cookie-session                         |

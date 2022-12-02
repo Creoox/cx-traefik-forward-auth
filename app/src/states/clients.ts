@@ -6,18 +6,18 @@ let oidcClient: BaseClient;
 /**
  * Initialize OIDC Client for authentication (log-in). Currently supported
  * Authentication Flows:
- * - Authorization Code Flow (default)
- * - Implicit Flow
+ * - Authorization Code Flow (OIDC-conformant, default)
+ * - Implicit Flow (OIDC-conformant)
  *
  * @todo add Hybrid Flow
  */
 export const initOidcClient = async (): Promise<void> => {
   const issuer = await Issuer.discover(process.env.OIDC_ISSUER_URL as string);
-  if (LOGIN_AUTH_FLOW === "id_token") {
+  if (LOGIN_AUTH_FLOW === "implicit") {
     oidcClient = new issuer.Client({
       client_id: process.env.OIDC_CLIENT_ID as string,
       redirect_uris: [`${process.env.HOST_URI}${AUTH_ENDPOINT}`],
-      response_types: [LOGIN_AUTH_FLOW],
+      response_types: ["token id_token"],
     });
   } else {
     oidcClient = new issuer.Client({
