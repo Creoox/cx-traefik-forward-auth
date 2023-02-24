@@ -8,6 +8,9 @@ export const LOGIN_WHEN_NO_TOKEN = ["true", "True", "1"].includes(
 );
 export const LOGIN_COOKIE_NAME =
   process.env.LOGIN_COOKIE_NAME || "cx_forward_auth";
+export const AUTH_ALLOW_UNSEC_OPTIONS = ["true", "True", "1"].includes(
+  process.env.AUTH_ALLOW_UNSEC_OPTIONS || ""
+);
 export const LOGIN_SCOPE = process.env.LOGIN_SCOPE || "openid email profile";
 export const LOGIN_AUTH_FLOW = ((): "implicit" | "code" => {
   if (process.env.LOGIN_AUTH_FLOW === "id_token token") {
@@ -50,6 +53,7 @@ const dotenvVars_optionalStr = [
   "LOGIN_COOKIE_NAME",
   "LOGIN_SESSION_SECRET",
   "AUTH_ENDPOINT",
+  "AUTH_ALLOW_UNSEC_OPTIONS",
 ] as const;
 const dotenvVars_optionalNum = ["APP_PORT"] as const;
 

@@ -54,24 +54,39 @@ Currently tested providers:
 <details>
 <summary>Environmental variables:</summary>
 
-| Variable Name          | Type    | Obligatory | Comment                                                      |
-| ---------------------- | ------- | ---------- | ------------------------------------------------------------ |
-| APP_NAME               | string  | No         | Displayed service (app) name                                 |
-| APP_VERSION            | string  | No         | Displayed service (app) version                              |
-| APP_PORT               | int     | No         | Service running port                                         |
-| HOST_URI               | string  | Yes        | URI of the host the service is running on                    |
-| ENVIRONMENT            | string  | Yes        | 'development' or 'production'                                |
-| OIDC_ISSUER_URL        | string  | Yes        | Main Issuer's URL - all data are retrieved from there        |
-| OIDC_CLIENT_ID         | string  | Yes        | OIDC client id                                               |
-| OIDC_CLIENT_SECRET     | string  | No         | OIDC client secret (if set)                                  |
-| OIDC_VERIFICATION_TYPE | string  | Yes        | 'jwt' - decoding or 'introspection' - asking AS              |
-| JWT_STRICT_AUDIENCE    | boolean | Yes        | true if token should be used for strict audinence only       |
-| AUTH_ENDPOINT          | string  | No         | Service redirection endpoint, '/\_oauth' by default          |
-| LOGIN_WHEN_NO_TOKEN    | boolean | Yes        | true if login functionality should be on (**dev only!**)     |
-| LOGIN_AUTH_FLOW        | string  | No         | 'code' (default) or 'id_token token' (implicit flow)         |
-| LOGIN_SCOPE            | string  | No         | Requested scope(s), defaults to "openid email profile"       |
-| LOGIN_COOKIE_NAME      | string  | No         | Name of the browser cookie, only if LOGIN_WHEN_NO_TOKEN=true |
-| LOGIN_SESSION_SECRET   | string  | No         | Randomized secret for cookie-session                         |
+| Variable Name            | Type    | Obligatory | Comment                                                      |
+| ------------------------ | ------- | ---------- | ------------------------------------------------------------ |
+| APP_NAME                 | string  | No         | Displayed service (app) name                                 |
+| APP_VERSION              | string  | No         | Displayed service (app) version                              |
+| APP_PORT                 | int     | No         | Service running port                                         |
+| HOST_URI                 | string  | Yes        | URI of the host the service is running on                    |
+| ENVIRONMENT              | string  | Yes        | 'development' or 'production'                                |
+| OIDC_ISSUER_URL          | string  | Yes        | Main Issuer's URL - all data are retrieved from there        |
+| OIDC_CLIENT_ID           | string  | Yes        | OIDC client id                                               |
+| OIDC_CLIENT_SECRET       | string  | No         | OIDC client secret (if set)                                  |
+| OIDC_VERIFICATION_TYPE   | string  | Yes        | 'jwt' - decoding or 'introspection' - asking AS              |
+| JWT_STRICT_AUDIENCE      | boolean | Yes        | true if token should be used for strict audinence only       |
+| AUTH_ENDPOINT            | string  | No         | Service redirection endpoint, '/\_oauth' by default          |
+| AUTH_ALLOW_UNSEC_OPTIONS | boolean | No         | Allow unsecured OPTIONS request, false by default            |
+| LOGIN_WHEN_NO_TOKEN      | boolean | Yes        | true if login functionality should be on (**dev only!**)     |
+| LOGIN_AUTH_FLOW          | string  | No         | 'code' (default) or 'id_token token' (implicit flow)         |
+| LOGIN_SCOPE              | string  | No         | Requested scope(s), defaults to "openid email profile"       |
+| LOGIN_COOKIE_NAME        | string  | No         | Name of the browser cookie, only if LOGIN_WHEN_NO_TOKEN=true |
+| LOGIN_SESSION_SECRET     | string  | No         | Randomized secret for cookie-session                         |
+
+Please mind that if <code>AUTH_ALLOW_UNSEC_OPTIONS</code> is set to <code>true</code>, then the endpoint that should
+accept OPTIONS request, should provide separate rule for that and pass <code>X-Forwarded-Method: OPTIONS</code> header
+to **cx-traefik-forward-auth** there, for instance (docker).
+
+```yml
+    ...
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.middlewares.add-options-header.headers.customrequestheaders.X-Forwarded-Method=OPTIONS"
+      - "traefik.http.routers.your-endpoint-options.rule=Host(`your-endpoint.com`) && Method(`OPTIONS`)"
+      - "traefik.http.routers.your-endpoint-options.middlewares=add-options-header,cx-traefik-forward-auth"
+      ...
+```
 
 </details>
 

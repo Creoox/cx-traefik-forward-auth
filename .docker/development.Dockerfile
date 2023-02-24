@@ -1,9 +1,13 @@
-FROM node:16-alpine AS builder
+FROM node:18-alpine AS base
+RUN apk update && apk upgrade
+WORKDIR /app
+
+
+FROM base AS development
 ARG node_env_type=development
 
-WORKDIR /app
 COPY ./app .
 
 ENV NODE_ENV ${node_env_type}
-RUN yarn
+RUN yarn install
 CMD [ "yarn", "start:dev" ]

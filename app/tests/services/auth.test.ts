@@ -92,7 +92,7 @@ describe("Authenticator | URL generator", () => {
     // console.log(authorizationUrl);
 
     expect(endCacheKeyNo - startCacheKeyNo).toEqual(1);
-    expect(authorizationUrl.includes("response_type=token%20id_token")).toBe(true);
+    expect(authorizationUrl.includes("response_type=id_token%20token")).toBe(true);
     expect(authorizationUrl.includes("state=")).toBe(true);
     expect(authorizationUrl.includes("nonce=")).toBe(true);
   });

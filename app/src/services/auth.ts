@@ -71,7 +71,9 @@ export const genAuthorizationUrl = (
       state: random_state,
     });
   }
-  logger.debug(`authorizationUrl: ${authorizationUrl}`);
+  logger.debug(
+    `Generted url for flow: ${loginAuthFlow} is: ${authorizationUrl}`
+  );
   return authorizationUrl;
 };
 
@@ -148,8 +150,15 @@ export const verifyTokenViaJwt = async (token: string): Promise<JWTPayload> => {
   }
   const JWKS = createLocalJWKSet((await getJwkKeys()) as JSONWebKeySet);
 
+  const stripSlash = (str: string | undefined) => {
+    if (str && str[str.length - 1] === "/") {
+      return str.substring(0, str.length - 1);
+    }
+    return str;
+  };
+
   const { payload } = await jwtVerify(token, JWKS, {
-    issuer: process.env.OIDC_ISSUER_URL,
+    issuer: stripSlash(process.env.OIDC_ISSUER_URL),
     audience: JWT_STRICT_AUDIENCE ? process.env.OIDC_CLIENT_ID : undefined,
   });
   return payload;
