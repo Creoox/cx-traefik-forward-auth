@@ -83,16 +83,16 @@ describe("Authenticator | URL generator", () => {
     const issuerStub = await Issuer.discover(
       process.env.OIDC_ISSUER_URL as string
     );
-    const clientStub = getOidcClientStub(issuerStub, ["id_token"]);
+    const clientStub = getOidcClientStub(issuerStub, ["id_token token"]);
     (getOidcClient as jest.Mock).mockImplementation(() => clientStub);
 
     const startCacheKeyNo = getLoginCache().keys().length;
-    const authorizationUrl = genAuthorizationUrl(testHeaders, "id_token");
+    const authorizationUrl = genAuthorizationUrl(testHeaders, "implicit");
     const endCacheKeyNo = getLoginCache().keys().length;
-    console.log(authorizationUrl);
+    // console.log(authorizationUrl);
 
     expect(endCacheKeyNo - startCacheKeyNo).toEqual(1);
-    expect(authorizationUrl.includes("response_type=id_token")).toBe(true);
+    expect(authorizationUrl.includes("response_type=id_token%20token")).toBe(true);
     expect(authorizationUrl.includes("state=")).toBe(true);
     expect(authorizationUrl.includes("nonce=")).toBe(true);
   });

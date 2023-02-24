@@ -3,6 +3,7 @@ import express, { Application, Request, Response, NextFunction } from "express";
 import session from "express-session";
 
 import {
+  AUTH_ALLOW_UNSEC_OPTIONS,
   VERIF_TYPE,
   LOGIN_WHEN_NO_TOKEN,
   LOGIN_COOKIE_NAME,
@@ -28,6 +29,9 @@ const isProdEnv = process.env.NODE_ENV === PROD_ENV;
 const PORT = process.env.APP_PORT || 4181;
 
 const app: Application = express();
+/**
+ * Setup authorization session cookie (should be used only on DEV!)
+ */
 if (LOGIN_WHEN_NO_TOKEN) {
   app.use(
     session({
@@ -37,9 +41,28 @@ if (LOGIN_WHEN_NO_TOKEN) {
       saveUninitialized: false,
       cookie: {
         secure: "auto",
-        maxAge: 5 * 60 * 1000,
+        maxAge: 15 * 60 * 1000,
       },
     })
+  );
+}
+/**
+ * Middleware to filter and handle browsers OPTIONS preflight request.
+ * TODO: Restrict preflight for defined origins (clients) only.
+ */
+if (AUTH_ALLOW_UNSEC_OPTIONS) {
+  app.use(
+    async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      if (req.headers["x-forwarded-method"] === "OPTIONS") {
+        logger.debug(
+          `Detected OPTIONS request from ${req.url} - passing through!`
+        );
+        res.sendStatus(200);
+        return;
+      } else {
+        next();
+      }
+    }
   );
 }
 app.use(express.json());
@@ -71,7 +94,7 @@ app.get(
   "/",
   isSessionEstablished,
   (req: Request, res: Response, next: NextFunction): void => {
-    logger.debug(`Call to '/' (session) from ${req.url}`);
+    logger.debug(`Call (session) to '/' from ${req.url}`);
 
     // /AUTH_ENDPOINT/token endpoint
     if (

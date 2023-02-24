@@ -22,8 +22,8 @@ const JWT_STRICT_AUDIENCE = ["true", "True", "1"].includes(
 
 /**
  * Generates authorization url based on two possible flows:
- * - Authorization Code Flow (default)
- * - Implicit Flow
+ * - Authorization Code Flow (OIDC-conformant, default)
+ * - Implicit Flow (OIDC-conformant)
  *
  * @param headers containing information with original request
  * @param [loginAuthFlow=LOGIN_AUTH_FLOW] optional parameter to set auth flow
@@ -32,7 +32,7 @@ const JWT_STRICT_AUDIENCE = ["true", "True", "1"].includes(
  */
 export const genAuthorizationUrl = (
   headers: IncomingHttpHeaders,
-  loginAuthFlow: string = LOGIN_AUTH_FLOW
+  loginAuthFlow: "implicit" | "code" = LOGIN_AUTH_FLOW
 ): string => {
   let authorizationUrl: string;
   const random_state = getRandomString(24);
@@ -44,7 +44,7 @@ export const genAuthorizationUrl = (
     forwardedUri: headers["x-forwarded-uri"] as string,
   };
 
-  if (loginAuthFlow === "id_token") {
+  if (loginAuthFlow === "implicit") {
     const nonce = generators.nonce();
     getLoginCache().set(random_state, {
       nonce,
@@ -71,6 +71,9 @@ export const genAuthorizationUrl = (
       state: random_state,
     });
   }
+  logger.debug(
+    `Generted url for flow: ${loginAuthFlow} is: ${authorizationUrl}`
+  );
   return authorizationUrl;
 };
 
@@ -98,7 +101,7 @@ export const handleCallback = async (
   }
 
   let tokenSet: TokenSet;
-  if (LOGIN_AUTH_FLOW === "id_token") {
+  if (LOGIN_AUTH_FLOW === "implicit") {
     tokenSet = await getOidcClient().callback(
       `${process.env.HOST_URI}${AUTH_ENDPOINT}`,
       params,
@@ -147,8 +150,15 @@ export const verifyTokenViaJwt = async (token: string): Promise<JWTPayload> => {
   }
   const JWKS = createLocalJWKSet((await getJwkKeys()) as JSONWebKeySet);
 
+  const stripSlash = (str: string | undefined) => {
+    if (str && str[str.length - 1] === "/") {
+      return str.substring(0, str.length - 1);
+    }
+    return str;
+  };
+
   const { payload } = await jwtVerify(token, JWKS, {
-    issuer: process.env.OIDC_ISSUER_URL,
+    issuer: stripSlash(process.env.OIDC_ISSUER_URL),
     audience: JWT_STRICT_AUDIENCE ? process.env.OIDC_CLIENT_ID : undefined,
   });
   return payload;

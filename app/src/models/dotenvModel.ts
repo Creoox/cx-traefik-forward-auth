@@ -1,13 +1,29 @@
+import { logger } from "../services/logger";
+
 export const VERIF_TYPE =
   process.env.OIDC_VERIFICATION_TYPE === "introspection" ? "intro" : "jwt";
 /* eslint-disable  @typescript-eslint/no-non-null-assertion */
 export const LOGIN_WHEN_NO_TOKEN = ["true", "True", "1"].includes(
   process.env.LOGIN_WHEN_NO_TOKEN!
 );
-export const LOGIN_AUTH_FLOW = process.env.LOGIN_AUTH_FLOW || "code";
 export const LOGIN_COOKIE_NAME =
   process.env.LOGIN_COOKIE_NAME || "cx_forward_auth";
+export const AUTH_ALLOW_UNSEC_OPTIONS = ["true", "True", "1"].includes(
+  process.env.AUTH_ALLOW_UNSEC_OPTIONS || ""
+);
 export const LOGIN_SCOPE = process.env.LOGIN_SCOPE || "openid email profile";
+export const LOGIN_AUTH_FLOW = ((): "implicit" | "code" => {
+  if (process.env.LOGIN_AUTH_FLOW === "id_token token") {
+    return "implicit";
+  } else if (process.env.LOGIN_AUTH_FLOW === "code") {
+    return "code";
+  } else {
+    logger.warn(
+      `Unsupported login flow type: ${process.env.LOGIN_AUTH_FLOW}. Using default: 'code'`
+    );
+    return "code";
+  }
+})();
 
 const boolTypes = [
   true,
@@ -37,6 +53,7 @@ const dotenvVars_optionalStr = [
   "LOGIN_COOKIE_NAME",
   "LOGIN_SESSION_SECRET",
   "AUTH_ENDPOINT",
+  "AUTH_ALLOW_UNSEC_OPTIONS",
 ] as const;
 const dotenvVars_optionalNum = ["APP_PORT"] as const;
 
