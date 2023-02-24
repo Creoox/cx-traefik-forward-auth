@@ -1,7 +1,7 @@
 # Basic CI task for development and production. It assures that code is kept 
 # unit-tested. Test coverage is not checked.
 
-name: Quality Gate -> Unit Tests on Development Environment 
+name: Quality Gate -> Unit Tests on Development Environment
 on:
   push:
     branches: [ develop ]
