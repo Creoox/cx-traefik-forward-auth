@@ -189,8 +189,9 @@ app.get(
     // Additional feature -> browser-based login
     else if (LOGIN_WHEN_NO_TOKEN) {
       const isAuthCallback =
+        !!req.headers["x-forwarded-uri"] &&
         (req.headers["x-forwarded-uri"] as string).split("?")[0] ===
-        AUTH_ENDPOINT;
+          AUTH_ENDPOINT;
       if (isAuthCallback) {
         req.url = req.headers["x-forwarded-uri"] as string;
         return handleCallback(req, res, next);
