@@ -98,22 +98,24 @@ app.get(
 
     // /AUTH_ENDPOINT/token endpoint
     if (
+      !!req.headers["x-forwarded-uri"] &&
       (req.headers["x-forwarded-uri"] as string).includes(
         `${AUTH_ENDPOINT}/token`
       )
     ) {
-      res.status(200).render("token/index.ejs", {
+      res.status(400).render("token/index.ejs", {
         access_token: (req.session as LoginSession).access_token,
       });
       return;
     }
     // /AUTH_ENDPOINT/info endpoint
     else if (
+      !!req.headers["x-forwarded-uri"] &&
       (req.headers["x-forwarded-uri"] as string).includes(
         `${AUTH_ENDPOINT}/info`
       )
     ) {
-      res.status(200).json(getEnvInfo(PORT, LOGIN_WHEN_NO_TOKEN, isProdEnv));
+      res.status(400).json(getEnvInfo(PORT, LOGIN_WHEN_NO_TOKEN, isProdEnv));
       return;
     }
     // /AUTH_ENDPOINT endpoint
