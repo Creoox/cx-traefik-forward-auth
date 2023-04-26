@@ -102,7 +102,7 @@ app.get(
         `${AUTH_ENDPOINT}/token`
       )
     ) {
-      res.status(400).render("token/index.ejs", {
+      res.status(200).render("token/index.ejs", {
         access_token: (req.session as LoginSession).access_token,
       });
       return;
@@ -113,7 +113,7 @@ app.get(
         `${AUTH_ENDPOINT}/info`
       )
     ) {
-      res.status(400).json(getEnvInfo(PORT, LOGIN_WHEN_NO_TOKEN, isProdEnv));
+      res.status(200).json(getEnvInfo(PORT, LOGIN_WHEN_NO_TOKEN, isProdEnv));
       return;
     }
     // /AUTH_ENDPOINT endpoint

@@ -19,6 +19,7 @@ FROM base AS production
 ARG node_env_type=production
 
 COPY --chown=node:node --from=build-base /app/dist /app/dist
+COPY --chown=node:node --from=build-base /app/public /app/public
 COPY --chown=node:node --from=prod-modules /app/prod_node_modules /app/node_modules
 
 ENV NODE_ENV ${node_env_type}
