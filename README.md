@@ -35,8 +35,8 @@ Currently tested providers:
 | ------------------------------------------------------ | ------- | ------ | ------------- |
 | [Keycloak](https://www.keycloak.org/)                  | 17.1    | ✅     |               |
 | [SAP Commerce](https://help.sap.com/docs/SAP_COMMERCE) | ?       | ⏳     | Running tests |
-| Google                                                 | ?       | ➡️     | Planned       |
-| GitHub                                                 | ?       | ➡️     | Planned       |
+| Google                                                 | ?       | ✅     | Planned       |
+| GitHub                                                 | ?       | ✅     | Planned       |
 
 <br/>
 
@@ -145,7 +145,7 @@ traefik:
         - cx-example-net
 
   traefik-forward-auth:
-    image: creoox/cx-traefik-forward-auth:1.0.1
+    image: creoox/cx-traefik-forward-auth:1.1.3
     container_name: cx-example-traefik-forward-auth
     env_file:
       - ./cx-traefik-forward-auth.env

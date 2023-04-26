@@ -98,6 +98,7 @@ app.get(
 
     // /AUTH_ENDPOINT/token endpoint
     if (
+      !!req.headers["x-forwarded-uri"] &&
       (req.headers["x-forwarded-uri"] as string).includes(
         `${AUTH_ENDPOINT}/token`
       )
@@ -109,6 +110,7 @@ app.get(
     }
     // /AUTH_ENDPOINT/info endpoint
     else if (
+      !!req.headers["x-forwarded-uri"] &&
       (req.headers["x-forwarded-uri"] as string).includes(
         `${AUTH_ENDPOINT}/info`
       )
