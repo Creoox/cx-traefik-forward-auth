@@ -54,6 +54,8 @@ const dotenvVars_optionalStr = [
   "LOGIN_SESSION_SECRET",
   "AUTH_ENDPOINT",
   "AUTH_ALLOW_UNSEC_OPTIONS",
+  "AUTH_ROLES_STRUCT",
+  "AUTH_ROLE_NAME",
 ] as const;
 const dotenvVars_optionalNum = ["APP_PORT"] as const;
 
@@ -134,6 +136,7 @@ export function validateDotenvFile(): void {
     );
   }
 
+  // Check if numeric values are really numbers
   const optVars = dotenvVars_optionalNum;
   for (const variable in optVars) {
     if (
@@ -142,6 +145,16 @@ export function validateDotenvFile(): void {
     ) {
       throw new Error(`Variable: ${optVars[variable]} must have numeric value`);
     }
+  }
+
+  // Check coherence between AUTH_GROUP
+  if (
+    (process.env["AUTH_ROLES_STRUCT"] && !process.env["AUTH_ROLE_NAME"]) ||
+    (!process.env["AUTH_ROLES_STRUCT"] && process.env["AUTH_ROLE_NAME"])
+  ) {
+    throw new Error(
+      "Variables: AUTH_ROLES_STRUCT and AUTH_ROLE_NAME must be either defined or skipped at the same time"
+    );
   }
 
   return;

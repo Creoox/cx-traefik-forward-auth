@@ -34,9 +34,9 @@ Currently tested providers:
 | Provider                                               | Version | Result | Comment       |
 | ------------------------------------------------------ | ------- | ------ | ------------- |
 | [Keycloak](https://www.keycloak.org/)                  | 17.1    | ✅     |               |
-| [SAP Commerce](https://help.sap.com/docs/SAP_COMMERCE) | ?       | ⏳     | Running tests |
+| [SAP Commerce](https://help.sap.com/docs/SAP_COMMERCE) | ?       | ✅     |               |
 | Google                                                 | ?       | ✅     | Planned       |
-| GitHub                                                 | ?       | ✅     | Planned       |
+| GitHub                                                 |         | ✅     |               |
 
 <br/>
 
@@ -73,6 +73,8 @@ Currently tested providers:
 | LOGIN_SCOPE              | string  | No         | Requested scope(s), defaults to "openid email profile"       |
 | LOGIN_COOKIE_NAME        | string  | No         | Name of the browser cookie, only if LOGIN_WHEN_NO_TOKEN=true |
 | LOGIN_SESSION_SECRET     | string  | No         | Randomized secret for cookie-session                         |
+| AUTH_ROLES_STRUCT        | string  | No         | Structure of roles (list) in token payload (**dot** notation)|
+| AUTH_ROLE_NAME           | string  | No         | Role name to check in token roles                            |
 
 Please mind that if <code>AUTH_ALLOW_UNSEC_OPTIONS</code> is set to <code>true</code>, then the endpoint that should
 accept OPTIONS request, should provide separate rule for that and pass <code>X-Forwarded-Method: OPTIONS</code> header
@@ -88,11 +90,25 @@ to **cx-traefik-forward-auth** there, for instance (docker).
       ...
 ```
 
+Additionally, both <code>AUTH_ROLES_STRUCT</code> and <code>AUTH_ROLE_NAME</code> have to be either set or empty. Object dot notation is presented below:
+
+`resource_access.dummy-client.roles` 
+
+and is equall to JSON notation:
+
+```json
+...
+"resource_access": {
+  "dummy-client": {
+    "roles": [...],
+  },
+},
+```
+
 </details>
+<br/>
 
 ## Examples
-
-<br/>
 
 <details>
 <summary>Docker Standalone:</summary>
@@ -145,7 +161,7 @@ traefik:
         - cx-example-net
 
   traefik-forward-auth:
-    image: creoox/cx-traefik-forward-auth:1.1.3
+    image: creoox/cx-traefik-forward-auth:1.1.4
     container_name: cx-example-traefik-forward-auth
     env_file:
       - ./cx-traefik-forward-auth.env
@@ -160,7 +176,6 @@ traefik:
 ```
 
 </details>
-
 <br/>
 
 <details>
@@ -169,7 +184,6 @@ traefik:
 Not tested -> TODO
 
 </details>
-
 <br/>
 
 <details>
@@ -178,7 +192,6 @@ Not tested -> TODO
 Not implemented -> TODO
 
 </details>
-
 <br/>
 
 # Project setup (containerized)
@@ -243,7 +256,6 @@ make down-dev-env
 ```
 
 </details>
-
 <br/>
 
 <details>
