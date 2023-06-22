@@ -24,6 +24,8 @@ const dotenvFile: DotenvFile = {
   OIDC_VERIFICATION_TYPE: "jwt",
   LOGIN_WHEN_NO_TOKEN: false,
   JWT_STRICT_AUDIENCE: false,
+  AUTH_ROLES_STRUCT: "groups.special",
+  AUTH_ROLE_NAME: "dummy-group",
 };
 
 describe("Validator for dotenv files", () => {
@@ -202,5 +204,35 @@ describe("Validator for dotenv files", () => {
     };
     process.env.APP_PORT = "NaN";
     expect(() => validateDotenvFile()).toThrow(Error);
+  });
+
+  it("fails if the `AUTH_ROLES_STRUCT` is set but `AUTH_ROLE_NAME` doesn't.", () => {
+    process.env = {
+      ...process.env,
+      ...stringifyObjectValues(dotenvFile),
+    };
+    process.env.AUTH_ROLES_STRUCT = "groups";
+    process.env.AUTH_ROLE_NAME = undefined;
+    expect(() => validateDotenvFile()).toThrow(Error);
+  });
+
+  it("fails if the `AUTH_ROLE_NAME` is set but `AUTH_ROLES_STRUCT` doesn't.", () => {
+    process.env = {
+      ...process.env,
+      ...stringifyObjectValues(dotenvFile),
+    };
+    process.env.AUTH_ROLES_STRUCT = undefined;
+    process.env.AUTH_ROLE_NAME = "dummy-group";
+    expect(() => validateDotenvFile()).toThrow(Error);
+  });
+
+  it("passes if both `AUTH_ROLE_NAME` and `AUTH_ROLES_STRUCT` are set.", () => {
+    process.env = {
+      ...process.env,
+      ...stringifyObjectValues(dotenvFile),
+    };
+    process.env.AUTH_ROLES_STRUCT = "groups";
+    process.env.AUTH_ROLE_NAME = "dummy-group";
+    expect(() => validateDotenvFile()).not.toThrow(Error);
   });
 });
