@@ -1,7 +1,7 @@
 import session from "express-session";
 
 export interface LoginSession extends Partial<session.SessionData> {
-  access_token?: string;
+  token?: string;
 }
 
 export interface LoginCache extends Partial<session.SessionData> {

@@ -24,6 +24,7 @@ export const LOGIN_AUTH_FLOW = ((): "implicit" | "code" => {
     return "code";
   }
 })();
+export const JWT_TOKEN_TYPE = process.env.JWT_TOKEN_TYPE || "access_token";
 
 const boolTypes = [
   true,
@@ -56,6 +57,7 @@ const dotenvVars_optionalStr = [
   "AUTH_ALLOW_UNSEC_OPTIONS",
   "AUTH_ROLES_STRUCT",
   "AUTH_ROLE_NAME",
+  "JWT_TOKEN_TYPE",
 ] as const;
 const dotenvVars_optionalNum = ["APP_PORT"] as const;
 
@@ -154,6 +156,17 @@ export function validateDotenvFile(): void {
   ) {
     throw new Error(
       "Variables: AUTH_ROLES_STRUCT and AUTH_ROLE_NAME must be either defined or skipped at the same time"
+    );
+  }
+
+  // Check if token type is of a valid type
+  if (
+    process.env["JWT_TOKEN_TYPE"] &&
+    process.env["JWT_TOKEN_TYPE"] !== "access_token" &&
+    process.env["JWT_TOKEN_TYPE"] !== "id_token"
+  ) {
+    throw new Error(
+      "Variable: JWT_TOKEN_TYPE has to be either 'access_token' (default) or 'id_token'"
     );
   }
 
