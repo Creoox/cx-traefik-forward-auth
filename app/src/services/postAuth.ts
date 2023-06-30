@@ -1,13 +1,15 @@
-import { ActiveOidcToken, InactiveOidcToken } from "../models/authModel";
+import {
+  ActiveOidcToken,
+  InactiveOidcToken,
+  OidcTokenCorePayload,
+} from "../models/authModel";
 import { logger } from "./logger";
 
 /**
- * Verifies token payload (authorizes caller). For the time being it's
- * open-to-implementation feature.
+ * Verifies token payload (checks whether token is active).
  *
- * @param payload
+ * @param payload token payload
  * @throws Error if token is inactive
- * @throws Error if authorization group is missing in token payload
  */
 export function validateTokenPayload<
   T extends ActiveOidcToken,
@@ -17,6 +19,18 @@ export function validateTokenPayload<
     throw new Error("Token is inactive.");
   }
 
+  return validateTokenRoles(payload as Partial<T>);
+}
+
+/**
+ * Verifies token payload (authorizes caller).
+ *
+ * @param payload token payload
+ * @throws Error if authorization group is missing in token payload
+ */
+export function validateTokenRoles<T extends OidcTokenCorePayload>(
+  payload: Partial<T>
+): void {
   const authGroupName = process.env.AUTH_ROLE_NAME;
   if (authGroupName) {
     const groupStruct = process.env.AUTH_ROLES_STRUCT?.split(

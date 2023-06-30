@@ -4,7 +4,9 @@ import {
   getRandomString,
   getEnvInfo,
   getStateParam,
+  decodeB64,
 } from "../../src/services/helpers";
+import { demoUserToken } from "../testData";
 
 describe("Random string generator", () => {
   it("generates different strings", () => {
@@ -45,5 +47,11 @@ describe("State Parameter", () => {
     expect(
       getStateParam(getTestUrl(testAuthEndpoint, testState), testAuthEndpoint)
     ).toEqual(testState);
+  });
+});
+
+describe("base64 decoder", () => {
+  it("decodes token", () => {
+    expect(() => decodeB64(demoUserToken)).not.toThrow(Error);
   });
 });

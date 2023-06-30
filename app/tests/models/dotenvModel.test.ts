@@ -235,4 +235,26 @@ describe("Validator for dotenv files", () => {
     process.env.AUTH_ROLE_NAME = "dummy-group";
     expect(() => validateDotenvFile()).not.toThrow(Error);
   });
+
+  it("fails if the `JWT_TOKEN_TYPE` is of a wrong type.", () => {
+    process.env = {
+      ...process.env,
+      ...stringifyObjectValues(dotenvFile),
+    };
+    process.env.JWT_TOKEN_TYPE = "dummy_type";
+    expect(() => validateDotenvFile()).toThrow(Error);
+  });
+
+  it("passes valid `JWT_TOKEN_TYPE` types.", () => {
+    process.env = {
+      ...process.env,
+      ...stringifyObjectValues(dotenvFile),
+    };
+    process.env.JWT_TOKEN_TYPE = "id_token";
+    expect(() => validateDotenvFile()).not.toThrow(Error);
+    process.env.JWT_TOKEN_TYPE = "access_token";
+    expect(() => validateDotenvFile()).not.toThrow(Error);
+    process.env.JWT_TOKEN_TYPE = undefined;
+    expect(() => validateDotenvFile()).not.toThrow(Error);
+  });
 });

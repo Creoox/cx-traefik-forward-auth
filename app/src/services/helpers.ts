@@ -56,3 +56,12 @@ export const getStateParam = (url: string, authEndpoint: string): string => {
     )[0]
     .replace("state=", "");
 };
+
+/**
+ * Decodes b64 strings.
+ *
+ * @param str base64-encoded string
+ * @returns decoded string
+ */
+export const decodeB64 = (str: string): string =>
+  Buffer.from(str, "base64").toString("binary");

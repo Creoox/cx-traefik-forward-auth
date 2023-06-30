@@ -7,6 +7,7 @@ import {
   VERIF_TYPE,
   LOGIN_WHEN_NO_TOKEN,
   LOGIN_COOKIE_NAME,
+  JWT_TOKEN_TYPE,
   validateDotenvFile,
 } from "./models/dotenvModel";
 import { checkIfIntrospectionPossible } from "./services/preAuth";
@@ -79,7 +80,7 @@ const isSessionEstablished = (
   res: Response,
   next: NextFunction
 ) => {
-  if (LOGIN_WHEN_NO_TOKEN && !!(req.session as LoginSession).access_token) {
+  if (LOGIN_WHEN_NO_TOKEN && !!(req.session as LoginSession).token) {
     next();
   } else {
     next("route");
@@ -104,7 +105,8 @@ app.get(
       )
     ) {
       res.status(400).render("token/index.ejs", {
-        access_token: (req.session as LoginSession).access_token,
+        token_type: JWT_TOKEN_TYPE,
+        token: (req.session as LoginSession).token,
       });
       return;
     }

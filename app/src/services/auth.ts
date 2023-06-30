@@ -10,10 +10,15 @@ import { getJwkKeys, getProviderEndpoints } from "./preAuth";
 import { AUTH_ENDPOINT, getOidcClient } from "../states/clients";
 import { getLoginCache } from "../states/cache";
 import { logger } from "./logger";
-import { getRandomString } from "./helpers";
+import { decodeB64, getRandomString } from "./helpers";
 import type { ActiveOidcToken, InactiveOidcToken } from "../models/authModel";
 import type { LoginSession, LoginCache } from "../models/loginModel";
-import { LOGIN_AUTH_FLOW, LOGIN_SCOPE } from "../models/dotenvModel";
+import {
+  LOGIN_AUTH_FLOW,
+  LOGIN_SCOPE,
+  JWT_TOKEN_TYPE,
+} from "../models/dotenvModel";
+import { validateTokenRoles } from "./postAuth";
 
 /* eslint-disable  @typescript-eslint/no-non-null-assertion */
 const JWT_STRICT_AUDIENCE = ["true", "True", "1"].includes(
@@ -114,35 +119,45 @@ export const handleCallback = async (
       { code_verifier: cache.code_verifier, state: params.state }
     );
   }
+  // for some reason we have make a copy
+  const token = JSON.parse(JSON.stringify(tokenSet[JWT_TOKEN_TYPE] as string));
 
   // create login session
   req.session.regenerate((err) => {
     if (err) {
       next(err);
     }
-    (req.session as LoginSession).access_token = tokenSet.access_token;
-    req.session.save((err) => {
-      if (err) {
-        return next(err);
-      }
-      if (req.headers["x-forwarded-uri"]) {
-        const originSchema = req.headers["x-forwarded-proto"];
-        const originHost = req.headers["x-forwarded-host"];
-        const originUri = req.headers["x-forwarded-uri"];
-        const url = `${originSchema}://${originHost}${originUri}`;
-        res.redirect(url);
-      } else {
-        return next(new Error("Missing `X-Forwarded-Uri` Header"));
-      }
-    });
+    try {
+      const payload = JSON.parse(decodeB64(token.split(".")[1]));
+      validateTokenRoles(payload);
+      (req.session as LoginSession).token = tokenSet[JWT_TOKEN_TYPE] as string;
+
+      req.session.save((err) => {
+        if (err) {
+          return next(err);
+        }
+        if (req.headers["x-forwarded-uri"]) {
+          const originSchema = req.headers["x-forwarded-proto"];
+          const originHost = req.headers["x-forwarded-host"];
+          const originUri = req.headers["x-forwarded-uri"];
+          const url = `${originSchema}://${originHost}${originUri}`;
+          res.redirect(url);
+        } else {
+          return next(new Error("Missing `X-Forwarded-Uri` Header"));
+        }
+      });
+    } catch (err) {
+      // return Promise.reject(`${err}`);
+      res.status(403).send(`${err}`);
+    }
   });
 };
 
 /**
  * Verify token via JWT - decode it using providers JWK Keys.
  *
- * @param token JWT access_token
- * @returns decoded access_token payload
+ * @param token JWT token (access_token or id_token)
+ * @returns decoded token payload
  */
 export const verifyTokenViaJwt = async (token: string): Promise<JWTPayload> => {
   if (!token.includes(".")) {
@@ -165,11 +180,11 @@ export const verifyTokenViaJwt = async (token: string): Promise<JWTPayload> => {
 };
 
 /**
- * Verify token via Token Introspection - validate access_token on the
+ * Verify token via Token Introspection - validate token on the
  * provider authorization server.
  *
- * @param token JWT access_token
- * @returns decoded access_token payload
+ * @param token JWT token (access_token or id_token)
+ * @returns decoded token payload
  */
 export const verifyTokenViaIntrospection = async (token: string) => {
   if (!token.includes(".")) {

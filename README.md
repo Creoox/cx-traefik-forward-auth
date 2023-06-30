@@ -66,6 +66,7 @@ Currently tested providers:
 | OIDC_CLIENT_SECRET       | string  | No         | OIDC client secret (if set)                                  |
 | OIDC_VERIFICATION_TYPE   | string  | Yes        | 'jwt' - decoding or 'introspection' - asking AS              |
 | JWT_STRICT_AUDIENCE      | boolean | Yes        | true if token should be used for strict audinence only       |
+| JWT_TOKEN_TYPE           | string  | No         | Used token, either 'access_token' (default) or 'id_token'    |
 | AUTH_ENDPOINT            | string  | No         | Service redirection endpoint, '/\_oauth' by default          |
 | AUTH_ALLOW_UNSEC_OPTIONS | boolean | No         | Allow unsecured OPTIONS request, false by default            |
 | LOGIN_WHEN_NO_TOKEN      | boolean | Yes        | true if login functionality should be on (**dev only!**)     |
@@ -161,7 +162,7 @@ traefik:
         - cx-example-net
 
   traefik-forward-auth:
-    image: creoox/cx-traefik-forward-auth:1.1.4
+    image: creoox/cx-traefik-forward-auth:1.1.5
     container_name: cx-example-traefik-forward-auth
     env_file:
       - ./cx-traefik-forward-auth.env
