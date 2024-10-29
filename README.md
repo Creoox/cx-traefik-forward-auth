@@ -34,6 +34,7 @@ Currently tested providers:
 | Provider                                               | Version | Result | Comment       |
 | ------------------------------------------------------ | ------- | ------ | ------------- |
 | [Keycloak](https://www.keycloak.org/)                  | 17.1    | ✅     |               |
+| [ZITADEL](https://zitadel.com/)                  | 2.64.1    | ✅     |               |
 | [SAP Commerce](https://help.sap.com/docs/SAP_COMMERCE) | ?       | ✅     |               |
 | Google                                                 | ?       | ✅     | Planned       |
 | GitHub                                                 |         | ✅     |               |

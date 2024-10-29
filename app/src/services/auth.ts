@@ -187,9 +187,6 @@ export const verifyTokenViaJwt = async (token: string): Promise<JWTPayload> => {
  * @returns decoded token payload
  */
 export const verifyTokenViaIntrospection = async (token: string) => {
-  if (!token.includes(".")) {
-    throw new Error("JWT token must contain at least one period `.`!");
-  }
 
   const providerEndpoints = await getProviderEndpoints();
   try {
